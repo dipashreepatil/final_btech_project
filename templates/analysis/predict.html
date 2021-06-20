@@ -1,0 +1,923 @@
+<!doctype html>
+{% extends "analysis/base.html" %}
+<html lang="en">
+{% block body_block %}
+<head>
+     {% load static %}
+
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
+    <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js" integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q" crossorigin="anonymous"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js" integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+  
+   
+    <link rel="stylesheet"  href="{%  static  'CSS/predict.css'  %}">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@2.9.3/dist/Chart.min.js"></script>
+    
+    <script>
+
+        function selectType(evt, modelType) {
+        // Declare all variables
+             var i, tabcontent, tablinks;
+            // Declare all variables
+             var i, vertical_tabcontent, vertical_tablinks;
+
+            // Get all elements with class="tabcontent" and hide them
+            vertical_tabcontent = document.getElementsByClassName("vertical_tabcontent");
+          
+            for (i = 0; i < vertical_tabcontent.length; i++) {
+                 vertical_tabcontent[i].style.display = "none";
+                 }
+
+            // Get all elements with class="tablinks" and remove the class "active"
+            vertical_tablinks = document.getElementsByClassName("vertical_tablinks");
+            for (i = 0; i < vertical_tablinks.length; i++) {
+                 vertical_tablinks[i].className = vertical_tablinks[i].className.replace(" active", "");
+                 }
+        // Get all elements with class="tabcontent" and hide them
+            tabcontent = document.getElementsByClassName("tabcontent");
+          
+            for (i = 0; i < tabcontent.length; i++) {
+                 tabcontent[i].style.display = "none";
+                 }
+
+         // Get all elements with class="tablinks" and remove the class "active"
+            tablinks = document.getElementsByClassName("tablinks");
+            for (i = 0; i < tablinks.length; i++) {
+                 tablinks[i].className = tablinks[i].className.replace(" active", "");
+                 }
+
+            // Show the current tab, and add an "active" class to the button that opened the tab
+            document.getElementById(modelType).style.display = "block";
+                    evt.currentTarget.className += " active";
+                }
+          
+        
+
+        function selectModel(evt, modelType) {
+            // Declare all variables
+             var i, vertical_tabcontent, vertical_tablinks;
+
+            // Get all elements with class="tabcontent" and hide them
+            vertical_tabcontent = document.getElementsByClassName("vertical_tabcontent");
+          
+            for (i = 0; i < vertical_tabcontent.length; i++) {
+                 vertical_tabcontent[i].style.display = "none";
+                 }
+
+            // Get all elements with class="tablinks" and remove the class "active"
+            vertical_tablinks = document.getElementsByClassName("vertical_tablinks");
+            for (i = 0; i < vertical_tablinks.length; i++) {
+                 vertical_tablinks[i].className = vertical_tablinks[i].className.replace(" active", "");
+                 }
+
+            // Show the current tab, and add an "active" class to the button that opened the tab
+            document.getElementById(modelType).style.display = "block";
+                    evt.currentTarget.className += " active";
+                }
+
+            function get_numeric_pred(event,id){
+              var company = document.getElementById("display_query").textContent;
+                $.ajax({
+                    type: "GET",                                      
+                    url: "{% url 'numerical_prediction' %}", 
+                     data: {"company":company.toLowerCase()},
+                    success: function(response) {  
+                   
+                    draw_linegraph(response.test_set,response.prediction,response.datelist,id);
+
+                  },
+                    error: function (response) {
+                   // alert the error if any error occured
+                   alert("Error occured during analysis");
+                }
+              })
+             }
+
+            function get_pred(event,ModelType,){
+               
+               selectModel(event,ModelType);
+               //document.getElementById(modelType).style.display = "block";
+               let model = String(ModelType);
+               var donut1 = "myDonut_1 ".concat(model);
+               var donut2 = "myDonut_2 ".concat(model);
+               var bargraph = "myBar_1 ".concat(model);
+               var linegraph = "numeric_line ".concat(model);
+               var dir = "direction ".concat(model);
+			         var company = document.getElementById("display_query").textContent;
+                $.ajax({
+                    type: "GET",                                      
+                    url: "{% url 'predict_with_model' %}", 
+                    data: {"model_name": model, "company":company.toLowerCase()},
+                    
+                    success: function(response) {      
+                                                                 
+                    if(response.direction ==1){
+                     document.getElementById(dir).textContent = "Stock Price will go up!"
+                
+                    }
+                    else{
+                       document.getElementById(dir).textContent = "Stock Price will go down!"
+                    }
+                    draw_donut(response.data_today,donut1,response.data_yesterday,donut2);   
+                    draw_bargraph(response.data_today_news,response.data_yesterday_news,bargraph);             
+                  },
+                    error: function (response) {
+                   // alert the error if any error occured
+                   alert("Error occured during analysis");
+                }
+              })
+              get_numeric_pred(event,linegraph);
+             }
+
+            function get_pred_dl(event,ModelType,){
+               selectModel(event,ModelType);
+               let model = String(ModelType);
+               var donut1 = "myDonut_1 ".concat(model);
+               var donut2 = "myDonut_2 ".concat(model);
+               var bargraph = "myBar_1 ".concat(model);
+               var linegraph = "numeric_line ".concat(model);
+               var dir = "direction ".concat(model);
+                var company = document.getElementById("display_query").textContent;
+                $.ajax({
+                    type: "GET",                                      
+                    url: "{% url 'predict_with_deep_learning' %}", 
+                    data: {"model_name": model, "company":company.toLowerCase()},
+                    
+                    success: function(response) {      
+                        if(response.direction ==1){
+                     document.getElementById(dir).textContent = "Stock Price will go up!"
+                
+                    }
+                    else{
+                       document.getElementById(dir).textContent = "Stock Price will go down!"
+                    }             
+                    draw_donut(response.data_today,donut1,response.data_yesterday,donut2);   
+                    draw_bargraph(response.data_today_news,response.data_yesterday_news,bargraph); 
+                    
+                  },
+                    error: function (response) {
+                   // alert the error if any error occured
+                   alert("Error occured during analysis");
+                }
+              })
+               get_numeric_pred(event,linegraph);
+             }
+              function getRandomColor() {
+                    var letters = '789ABCD'.split('');
+                    var color = '#';
+                    for (var i = 0; i < 6; i++ ) {
+                        color += letters[Math.round(Math.random() * 6)];
+                    }
+                    return color;
+                }
+
+            function draw_donut(data1,id1,data2,id2){
+
+              var ctx1 = document.getElementById(id1).getContext("2d");
+              var ctx2 = document.getElementById(id2).getContext("2d");
+                       
+              donut1 =  new Chart(ctx1,{
+                  type: 'doughnut',
+                  data: {
+                      labels: [" Positive Sentiment"," Negative Sentiment"],
+                      datasets: [{
+                      data: data1,
+                      backgroundColor: [
+                          getRandomColor(),
+                          getRandomColor(),
+                          ],
+                      }],
+                     },
+                  options: {
+                        responsive: true,
+                        legend: {
+                          display: true,
+                          labels: {
+                            padding: 20
+                          },},}
+                   }); 
+
+              donut2 = new Chart(ctx2,{
+                  type: 'doughnut',
+                  data: {
+                      labels: [" Positive Sentiment"," Negative Sentiment"],
+                      datasets: [{
+                      data: data2,
+                      backgroundColor: [
+                          getRandomColor(),
+                          getRandomColor(),
+                          ],
+                      }],
+                     },
+                  options: {
+                        responsive: true,
+                        legend: {
+                          display: true,
+                          labels: {
+                            padding: 20
+                          },},}
+                   }); 
+              } 
+
+           function draw_linegraph(data1,data2,data3,id){
+
+              var ctx4 = document.getElementById(id).getContext("2d");
+              
+              var data3 = data3;
+              var data1 = data1;
+              data1.push(data2)
+              data3.push("Next Predicted Index");
+
+             
+              linegraph1 =  new Chart(ctx4,{
+                  type: 'line',
+                  data: {
+                      labels: data3,
+                      datasets: [{
+                      
+                      label: "Stock Closing Indices",
+                      data: data1,
+                      
+                      borderColor: getRandomColor(),
+                      pointBackgroundColor: "rgb(255,0,0)",
+                      }],
+                     },
+                  options: {
+                        responsive: true,
+                        legend: {
+                          display: true,
+                          labels: {
+                            padding: 20
+                          },},}
+                   }); 
+
+             
+              } 
+    
+
+
+          function draw_bargraph(data1,data2,id){
+             
+            
+              negative_data = [data2[1],data1[1]];
+              positive_data = [data2[0],data1[0]];
+              
+              var ctx3 = document.getElementById(id).getContext('2d');
+              
+              var color1= getRandomColor();
+              var color2= getRandomColor();
+              barchart =  new Chart(ctx3,{
+                  type: 'bar',
+                  data: {
+                      
+                      labels: ["Yesterday's Aanalyis","Today's Analysis"],
+                      datasets: [{
+                      data: positive_data,
+                      label:"Positive Sentiment",
+                      backgroundColor: [
+                          color1,color1],
+
+                      },
+                      {
+                      data: negative_data,
+                      label : "Negative Sentiment",
+                      backgroundColor: [
+                          color2,color2 ],
+                      }
+                      
+                      ],
+                      borderWidth : 1
+                     },
+                  options: {
+                      scales: {
+                        yAxes :[{ticks:{beginAtZero : true, max: 100}}]
+                      },
+                      responsive: true
+                     }
+                   }); 
+              }
+
+           
+
+                         
+              $(document).on('submit','#search_form',function(e){
+               //document.getElementById(modelType).style.display = "block";
+              
+                e.preventDefault();
+                var serializedData = $(this).serialize();
+                var query = document.getElementById("query_input").value;
+                
+                
+                $('#search_button').html(
+                  '<i></i>Searching...');
+                $('#search_button').prop('disabled',true);
+
+                $.ajax({
+                    type: "POST",                  
+                    url: "{% url 'search_view' %}", 
+                    data: serializedData,
+                    success: function(response) {      
+                    
+                    $('#search_button').prop('disabled',false); 
+                     $('#search_button').html('<i></i>Search');  
+                   
+                    document.getElementById("display_query").innerHTML = String(query);
+                    
+                  },
+                    error: function (response) {
+                   // alert the error if any error occured
+                   alert("Error!");
+                }
+              });
+              
+         })      
+    </script>
+</head>
+
+
+<body>
+
+<div class= "container-sm" style = "margin-top:2% ;margin-left:2%; margin-right:2%">
+<form id="search_form">
+{% csrf_token %}
+<center>  
+               
+              <select type = "text" style = "margin-left:10%; height:35px; width:25%" 
+                  placeholder = "Search" name = "search_words" id='query_input'>
+                  <option name="amazon">Amazon</option>
+                  <option name="apple">Apple</option>
+                  <option name="microsoft">Microsoft</option>
+                  <option name="google">Google</option>
+                  <option name="ibm">IBM</option>
+                  <option name="tesla">Tesla</option>
+                  <option name="jp morgan">JP Morgan</option>
+                  <option name="gamestop">Gamestop Corporation</option>
+                  <option name="facebook">Facebook</option>
+                  <option name="netflix">Netflix</option>
+                  </select>
+
+               <button style = " background-color:#93e6ce;;
+                  height:35px; width:7%;;" type = "submit" 
+                  value = "Search" id='search_button'>
+                  <strong>Search</strong>
+               </button>
+
+              
+            </center>
+</form>
+<h4>Company Selected:<span id="display_query"></span></h4>
+<p></p>
+
+
+
+<!-- Tab links -->
+<div class="tab">
+  <button class="tablinks" onclick="selectType(event, 'Classical_ML')">Classical Machine Learning Models</button>
+  <button class="tablinks" onclick="selectType(event, 'DL')">Deep Learning Models</button>
+  <button class="tablinks" onclick="selectType(event, 'TSF')">Transformers</button>
+</div>
+
+<!-- Tab content -->
+<div id="Classical_ML" class="tabcontent">
+        <div class="vertical_tab">
+            <button class="vertical_tablinks" onclick="get_pred(event,'Logistic Regression')">Logistic Regression</button>
+            <button class="vertical_tablinks" onclick="get_pred(event,'Perceptron')" >Perceptron</button>
+            <button class="vertical_tablinks" onclick="get_pred(event,'SVM')">Support Vector Machine</button>
+            <button class="vertical_tablinks" onclick="get_pred(event,'KNearest')">KNearest Neighbors</button>
+            <button class="vertical_tablinks" onclick="get_pred(event,'ComplementNB')">Complement Naive Bayes</button>
+            <button class="vertical_tablinks" onclick="get_pred(event,'BernoulliNB')">Bernoulli Naive Bayes</button>
+            <button class="vertical_tablinks" onclick="get_pred(event,'MultinomialNB')" >Multinomial Naive Bayes</button>
+            <button class="vertical_tablinks" onclick="get_pred(event,'Decision Tree')" >Decision Tree</button>
+            <button class="vertical_tablinks" onclick="get_pred(event,'Linear SVM')">Linear SVM</button>
+            <button class="vertical_tablinks" onclick="get_pred(event,'Random Forest')">Random Forest</button>
+            <button class="vertical_tablinks" onclick="get_pred(event,'AdaBoost')" >AdaBoost Classifier</button>
+            <button class="vertical_tablinks" onclick="get_pred(event,'Gradient Descent')">Gradient Descent Classifier</button>
+            <button class="vertical_tablinks" onclick="get_pred(event,'SGD')">SGD Classifier</button>
+            
+        </div>
+
+        <div id="Logistic Regression" class="vertical_tabcontent">
+          <h4>Sentiment Analysis using Logistic Regression Classifier</h4>
+           <h5 id = "direction Logistic Regression">Stock direction:</h5>
+           <div class="row">
+            <div class="col-6">
+            <center><h5>For Social Media Mentions</h5>
+                <h6>Today's Analysis</h6></center>
+                <canvas id="myDonut_1 Logistic Regression" width="450" height="300" />
+             </div>
+              <div class="col-6">
+                <center><h5>For News</h5></center>
+                <canvas id="myBar_1 Logistic Regression" width="450" height="300" />
+              </div>
+            </div> 
+          <div class="row">
+            <div class="col-6">
+             <center><h6>Yesterday's Analysis</h6><center>
+             <canvas id="myDonut_2 Logistic Regression" width="450" height="300" />
+             </div>
+             <div class="col-6">
+             <center><h5>Predicting stock index using LSTM</h5><center>
+             <canvas id="numeric_line Logistic Regression" width="450" height="300" />
+             </div>  
+            </div>       
+          </div>
+        
+
+        <div id="Perceptron" class="vertical_tabcontent">
+          <h4>Sentiment Analysis using Perceptron Classifier</h4>
+          <h5 id = "direction Perceptron">Stock direction:</h5>
+         <div class="row">
+            <div class="col-6">
+            <center><h5>For Social Media Mentions</h5>
+            <h6>Today's Analysis</h6></center>
+               
+                <canvas id="myDonut_1 Perceptron" width="450" height="300" />
+             </div>
+              <div class="col-6">
+                <center><h5>For News</h5></center>
+                <canvas id="myBar_1 Perceptron" width="450" height="300" />
+              </div>
+            </div> 
+          <div class="row">
+            <div class="col-6">
+            <center><h6>Yesterday's Analysis</h6><center>
+             <canvas id="myDonut_2 Perceptron" width="450" height="300" />
+             </div>
+             <div class="col-6">
+              <center><h5>Predicting stock index using LSTM</h5><center>
+             <canvas id="numeric_line Perceptron" width="450" height="300" />
+             </div>  
+            </div>     
+        </div>
+
+        <div id="SVM" class="vertical_tabcontent">
+          <h4>Sentiment Analysis using Support Vector Machine Classifier</h4>
+          <h5 id = "direction SVM">Stock direction:</h5>
+          <div class="row">
+            <div class="col-6">
+            <center><h5>For Social Media Mentions</h5>
+            <h6>Today's Analysis</h6></center>
+              
+                <canvas id="myDonut_1 SVM" width="450" height="300" />
+             </div>
+              <div class="col-6">
+                <center><h5>For News</h5></center>
+                <canvas id="myBar_1 SVM" width="450" height="300" />
+              </div>
+            </div> 
+          <div class="row">
+            <div class="col-6">
+            <center><h6>Yesterday's Analysis</h6><center>
+             <canvas id="myDonut_2 SVM" width="450" height="300" />
+             </div>
+             <div class="col-6">
+              <center><h5>Predicting stock index using LSTM</h5><center>
+             <canvas id="numeric_line SVM" width="450" height="300" />
+             </div>  
+            </div>     
+        </div>
+
+        <div id="KNearest" class="vertical_tabcontent">
+          <h4>Sentiment Analysis using KNearest Neighbors Classifier</h4>
+          <h5 id = "direction KNearest">Stock direction:</h5>
+          <h5 id = "direction Logistic Regression">Stock direction:</h5>
+          <div class="row">
+            <div class="col-6">
+            <center><h5>For Social Media Mentions</h5>
+            <h6>Today's Analysis</h6></center>
+                <canvas id="myDonut_1 KNearest" width="450" height="300" />
+             </div>
+              <div class="col-6">
+                <center><h5>For News</h5></center>
+                <canvas id="myBar_1 KNearest" width="450" height="300" />
+              </div>
+            </div> 
+          <div class="row">
+            <div class="col-6">
+            <center><h6>Yesterday's Analysis</h6><center>
+             <canvas id="myDonut_2 KNearest" width="450" height="300" />
+             </div>
+             <div class="col-6">
+              <center><h5>Predicting stock index using LSTM</h5><center>
+             <canvas id="numeric_line KNearest" width="450" height="300" />
+             </div>  
+            </div>     
+        </div>
+
+        <div id="ComplementNB" class="vertical_tabcontent">
+          <h4>Sentiment Analysis using Complement Naive Bayes Classifier</h4>
+          <h5 id = "direction ComplementNB">Stock direction:</h5>
+          <div class="row">
+            <div class="col-6">
+            <center><h5>For Social Media Mentions</h5>
+            <h6>Today's Analysis</h6></center>
+                <canvas id="myDonut_1 ComplementNB" width="450" height="300" />
+             </div>
+              <div class="col-6">
+                <center><h5>For News</h5></center>
+                <canvas id="myBar_1 ComplementNB" width="450" height="300" />
+              </div>
+            </div> 
+          <div class="row">
+            <div class="col-6">
+            <center><h6>Yesterday's Analysis</h6><center>
+             <canvas id="myDonut_2 ComplementNB" width="450" height="300" />
+             </div>
+             <div class="col-6">
+              <center><h5>Predicting stock index using LSTM</h5><center>
+             <canvas id="numeric_line ComplementNB" width="450" height="300" />
+             </div>  
+            </div>     
+        </div>
+
+        <div id="BernoulliNB" class="vertical_tabcontent">
+          <h4>Sentiment Analysis using Bernoulli Naive Bayes</h4>
+          <h5 id = "direction BernoulliNB">Stock direction:</h5>
+          <div class="row">
+            <div class="col-6">
+            <center><h5>For Social Media Mentions</h5>
+            <h6>Today's Analysis</h6></center>
+                <canvas id="myDonut_1 BernoulliNB" width="450" height="300" />
+             </div>
+              <div class="col-6">
+                <center><h5>For News</h5></center>
+                <canvas id="myBar_1 BernoulliNB" width="450" height="300" />
+              </div>
+            </div> 
+          <div class="row">
+            <div class="col-6">
+            <center><h6>Yesterday's Analysis</h6><center>
+             <canvas id="myDonut_2 BernoulliNB" width="450" height="300" />
+             </div>
+             <div class="col-6">
+              <center><h5>Predicting stock index using LSTM</h5><center>
+             <canvas id="numeric_line BernoulliNB" width="450" height="300" />
+             </div>  
+            </div>     
+        </div>
+
+        <div id="MultinomialNB" class="vertical_tabcontent">
+          <h4>Sentiment Analysis using Multinomial Naive Bayes</h4>
+          <h5 id = "direction MultinomialNB">Stock direction:</h5>
+          <div class="row">
+            <div class="col-6">
+            <center><h5>For Social Media Mentions</h5><h6>Today's Analysis</h6></center>
+                <canvas id="myDonut_1 MultinomialNB" width="450" height="300" />
+             </div>
+              <div class="col-6">
+                <center><h5>For News</h5></center>
+                <canvas id="myBar_1 MultinomialNB" width="450" height="300" />
+              </div>
+            </div> 
+          <div class="row">
+            <div class="col-6">
+            <center><h6>Yesterday's Analysis</h6><center>
+             <canvas id="myDonut_2 MultinomialNB" width="450" height="300" />
+             </div>
+             <div class="col-6">
+              <center><h5>Predicting stock index using LSTM</h5><center>
+             <canvas id="numeric_line MultinomialNB" width="450" height="300" />
+             </div>  
+            </div>     
+        </div>
+
+        <div id="Decision Tree" class="vertical_tabcontent">
+          <h4>Sentiment Analysis using Decision Tree Classifier</h4>
+          <h5 id = "direction Decision Tree">Stock direction:</h5>
+          <div class="row">
+            <div class="col-6">
+            <center><h5>For Social Media Mentions</h5><h6>Today's Analysis</h6></center>
+                <canvas id="myDonut_1 Decision Tree" width="450" height="300" />
+             </div>
+              <div class="col-6">
+                <center><h5>For News</h5></center>
+                <canvas id="myBar_1 Decision Tree" width="450" height="300" />
+              </div>
+            </div> 
+          <div class="row">
+            <div class="col-6">
+            <center><h6>Yesterday's Analysis</h6><center>
+             <canvas id="myDonut_2 Decision Tree" width="450" height="300" />
+             </div>
+             <div class="col-6">
+              <center><h5>Predicting stock index using LSTM</h5><center>
+             <canvas id="numeric_line Decision Tree" width="450" height="300" />
+             </div>  
+            </div>     
+        </div>
+
+        <div id="Linear SVM" class="vertical_tabcontent">
+          <h4>Sentiment Analysis using Linear SVM</h4>
+          <h5 id = "direction Linear SVM">Stock direction:</h5>
+         <div class="row">
+            <div class="col-6">
+            <center><h5>For Social Media Mentions</h5><h6>Today's Analysis</h6></center>
+                <canvas id="myDonut_1 Linear SVM" width="450" height="300" />
+             </div>
+              <div class="col-6">
+                <center><h5>For News</h5></center>
+                <canvas id="myBar_1 Linear SVM" width="450" height="300" />
+              </div>
+            </div> 
+            
+          <div class="row">
+            <div class="col-6">
+            <center><h6>Yesterday's Analysis</h6><center>
+             <canvas id="myDonut_2 Linear SVM" width="450" height="300" />
+             </div>
+             <div class="col-6">
+              <center><h5>Predicting stock index using LSTM</h5><center>
+             <canvas id="numeric_line Linear SVM" width="450" height="300" />
+             </div>  
+            </div>     
+        </div>
+
+        <div id="Random Forest" class="vertical_tabcontent">
+          <h4>Sentiment Analysis using Random Forest Classifier</h4>
+          <h5 id = "direction Random Forest">Stock direction:</h5>
+          <div class="row">
+            <div class="col-6">
+            <center><h5>For Social Media Mentions</h5><h6>Today's Analysis</h6></center>
+                <canvas id="myDonut_1 Random Forest" width="450" height="300" />
+             </div>
+              <div class="col-6">
+                <center><h5>For News</h5></center>
+                <canvas id="myBar_1 Random Forest" width="450" height="300" />
+              </div>
+            </div> 
+          <div class="row">
+            <div class="col-6">
+            <center><h6>Yesterday's Analysis</h6><center>
+             <canvas id="myDonut_2 Random Forest" width="450" height="300" />
+             </div>
+             <div class="col-6">
+              <center><h5>Predicting stock index using LSTM</h5><center>
+             <canvas id="numeric_line Random Forest" width="450" height="300" />
+             </div>  
+            </div>     
+        </div>
+
+        <div id="AdaBoost" class="vertical_tabcontent">
+          <h4>Sentiment Analysis using AdaBoost Classifier</h4>
+          <h5 id = "direction AdaBoost">Stock direction:</h5>
+          <div class="row">
+            <div class="col-6">
+            <center><h5>For Social Media Mentions</h5><h6>Today's Analysis</h6></center>
+                <canvas id="myDonut_1 AdaBoost" width="450" height="300" />
+             </div>
+              <div class="col-6">
+                <center><h5>For News</h5></center>
+                <canvas id="myBar_1 AdaBoost" width="450" height="300" />
+              </div>
+            </div> 
+          <div class="row">
+            <div class="col-6">
+            <center><h6>Yesterday's Analysis</h6><center>
+             <canvas id="myDonut_2 AdaBoost" width="450" height="300" />
+             </div>
+             <div class="col-6">
+              <center><h5>Predicting stock index using LSTM</h5><center>
+             <canvas id="numeric_line AdaBoost" width="450" height="300" />
+             </div>  
+            </div>     
+        </div>
+
+        <div id="Gradient Descent" class="vertical_tabcontent">
+          <h4>Sentiment Analysis using Gradient Descent Classifier</h4>
+          <h5 id = "direction Gradient Descent">Stock direction:</h5>
+          <div class="row">
+            <div class="col-6">
+            <center><h5>For Social Media Mentions</h5><h6>Today's Analysis</h6></center>
+                <canvas id="myDonut_1 Gradient Descent" width="450" height="300" />
+             </div>
+              <div class="col-6">
+                <center><h5>For News</h5></center>
+                <canvas id="myBar_1 Gradient Descent" width="450" height="300" />
+              </div>
+            </div> 
+          <div class="row">
+            <div class="col-6">
+            <center><h6>Yesterday's Analysis</h6><center>
+             <canvas id="myDonut_2 Gradient Descent" width="450" height="300" />
+             </div>
+             <div class="col-6">
+              <center><h5>Predicting stock index using LSTM</h5><center>
+             <canvas id="numeric_line Gradient Descent" width="450" height="300" />
+             </div>  
+            </div>     
+        </div>
+
+        <div id="SGD" class="vertical_tabcontent">
+          <h4>Sentiment Analysis using SGD Classifier</h4>
+          <h5 id = "direction SGD">Stock direction:</h5>
+          <div class="row">
+            <div class="col-6">
+            <center><h5>For Social Media Mentions</h5><h6>Today's Analysis</h6></center>
+                <canvas id="myDonut_1 SGD" width="450" height="300" />
+             </div>
+              <div class="col-6">
+                <center><h5>For News</h5></center>
+                <canvas id="myBar_1 SGD" width="450" height="300" />
+              </div>
+            </div> 
+          <div class="row">
+            <div class="col-6">
+            <center><h6>Yesterday's Analysis</h6><center>
+             <canvas id="myDonut_2 SGD" width="450" height="300" />
+             </div>
+             <div class="col-6">
+              <center><h5>Predicting stock index using LSTM</h5><center>
+             <canvas id="numeric_line SGD" width="450" height="300" />
+             </div>  
+            </div>     
+        </div>
+
+       
+        </div>
+
+<div id="DL" class="tabcontent">
+        <div class="vertical_tab">
+            <button class="vertical_tablinks" onclick="get_pred_dl(event, 'CNN')">Convolutional Neural Network(CNN)</button>
+            <button class="vertical_tablinks" onclick="get_pred_dl(event, 'Shallow RNN')">Shallow Recurrent Neural Network</button>
+            <button class="vertical_tablinks" onclick="get_pred_dl(event, 'Deep RNN')">Deep Recurrent Neural Netork</button>
+            <button class="vertical_tablinks" onclick="get_pred_dl(event, 'Bidirectional RNN')">Bidirectional Recurrent Neural Network</button>
+            <button class="vertical_tablinks" onclick="get_pred_dl(event, 'LSTM')">Long Short Term Memory</button>
+   
+        </div>
+
+        <div id="CNN" class="vertical_tabcontent">
+         <h4>Sentiment Analysis using Convolutional Neural Network(CNN) </h4>  
+         <h5 id = "direction CNN">Stock direction:</h5>   
+         
+           <div class="row">
+            <div class="col-6">
+            <center><h5>For Social Media Mentions</h5><h6>Today's Analysis</h6></center>
+                <canvas id="myDonut_1 CNN" width="450" height="300" />
+             </div>
+              <div class="col-6">
+                <center><h5>For News</h5></center>
+                <canvas id="myBar_1 CNN" width="450" height="300" />
+              </div>
+            </div> 
+          <div class="row">
+            <div class="col-6">
+            <center><h6>Yesterday's Analysis</h6><center>
+             <canvas id="myDonut_2 CNN" width="450" height="300" />
+             </div>
+             <div class="col-6">
+              <center><h5>Predicting stock index using LSTM</h5><center>
+             <canvas id="numeric_line CNN" width="450" height="300" />
+             </div>  
+            </div>                
+        </div>
+
+        <div id="Shallow RNN" class="vertical_tabcontent">
+         <h4>Sentiment Analysis using Shallow Recurrent Neural Network(RNN) </h4> 
+         <h5 id = "direction Shallow RNN">Stock direction:</h5>
+           <div class="row">
+            <div class="col-6">
+            <center><h5>For Social Media Mentions</h5><h6>Today's Analysis</h6></center>
+                <canvas id="myDonut_1 Shallow RNN" width="450" height="300" />
+             </div>
+              <div class="col-6">
+                <center><h5>For News</h5></center>
+                <canvas id="myBar_1 Shallow RNN" width="450" height="300" />
+              </div>
+            </div> 
+          <div class="row">
+            <div class="col-6">
+            <center><h6>Yesterday's Analysis</h6><center>
+             <canvas id="myDonut_2 Shallow RNN" width="450" height="300" />
+             </div>
+             <div class="col-6">
+              <center><h5>Predicting stock index using LSTM</h5><center>
+             <canvas id="numeric_line Shallow RNN" width="450" height="300" />
+             </div>  
+            </div>               
+        </div>
+
+        <div id="Deep RNN" class="vertical_tabcontent">
+         <h4>Sentiment Analysis using Deep Recurrent Neural Network(RNN) </h4>
+         <h5 id = "direction Deep RNN">Stock direction:</h5>      
+           
+           <div class="row">
+            <div class="col-6">
+            <center><h5>For Social Media Mentions</h5><h6>Today's Analysis</h6></center>
+                <canvas id="myDonut_1 Deep RNN" width="450" height="300" />
+             </div>
+              <div class="col-6">
+                <center><h5>For News</h5></center>
+                <canvas id="myBar_1 Deep RNN" width="450" height="300" />
+              </div>
+            </div> 
+          <div class="row">
+            <div class="col-6">
+            <center><h6>Yesterday's Analysis</h6><center>
+             <canvas id="myDonut_2 Deep RNN" width="450" height="300" />
+             </div>
+             <div class="col-6">
+              <center><h5>Predicting stock index using LSTM</h5><center>
+             <canvas id="numeric_line Deep RNN" width="450" height="300" />
+             </div>  
+            </div>        
+        </div>
+
+        <div id="Bidirectional RNN" class="vertical_tabcontent">
+         <h4>Sentiment Analysis using BidirectionalRecurrent Neural Network(RNN) </h4> 
+          <h5 id = "direction Bidirectional RNN">Stock direction:</h5>
+           <div class="row">
+            <div class="col-6">
+            <center><h5>For Social Media Mentions</h5><h6>Today's Analysis</h6></center>
+                <canvas id="myDonut_1 Bidirectional RNN" width="450" height="300" />
+             </div>
+              <div class="col-6">
+                <center><h5>For News</h5></center>
+                <canvas id="myBar_1 Bidirectional RNN" width="450" height="300" />
+              </div>
+            </div> 
+          <div class="row">
+            <div class="col-6">
+            <center><h6>Yesterday's Analysis</h6><center>
+             <canvas id="myDonut_2 Bidirectional RNN" width="450" height="300" />
+             </div>
+             <div class="col-6">
+              <center><h5>Predicting stock index using LSTM</h5><center>
+             <canvas id="numeric_line Bidirectional RNN" width="450" height="300" />
+             </div>  
+            </div>       
+        </div>
+
+        <div id="LSTM" class="vertical_tabcontent">
+         <h4>Sentiment Analysis using Long Short Term Memory(LSTM) Network </h4>    
+         <h5 id = "direction LSTM">Stock direction:</h5>
+         
+           <div class="row">
+            <div class="col-6">
+            <center><h5>For Social Media Mentions</h5><h6>Today's Analysis</h6></center>
+                <canvas id="myDonut_1 LSTM" width="450" height="300" />
+             </div>
+              <div class="col-6">
+                <center><h5>For News</h5></center>
+                <canvas id="myBar_1 LSTM" width="450" height="300" />
+              </div>
+            </div> 
+          <div class="row">
+            <div class="col-6">
+            <center><h6>Yesterday's Analysis</h6><center>
+             <canvas id="myDonut_2 LSTM" width="450" height="300" />
+             </div>
+             <div class="col-6">
+              <center><h5>Predicting stock index using LSTM</h5><center>
+             <canvas id="numeric_line LSTM" width="450" height="300" />
+             </div>  
+            </div>               
+        </div>
+      </div>
+
+
+
+<div id="TSF" class="tabcontent">
+        <div class="vertical_tab">
+            <button class="vertical_tablinks" onclick="selectZSC(event, 'ZSC')">Zero shot classification pipeline</button>
+            <button class="vertical_tablinks" onclick="selectModel(event, 'DBERT')">Distill BERT</button>
+            <button class="vertical_tablinks" onclick="selectModel(event, 'BERT')">Bidirectional Encoder Representations from Transformers </button>
+            <button class="vertical_tablinks" onclick="selectModel(event, 'XLNet')">XLNet</button>
+         
+        </div>
+
+        <div id="ZSC" class="vertical_tabcontent">
+         {% comment %} <h4>Sentiment Analysis using Zero Shot classification pipeline </h4> {% endcomment %}
+         <h4>Sentiment Analysis using ZSC Classifier</h4>
+          <div class="row">
+            <div class="col-6">
+              <canvas id="myChartPie ZSC">myChartPie</canvas>
+            </div>
+
+            <div class="col-6">
+              <canvas id="myChartBar ZSC">myChartBar</canvas>
+            </div>
+          </div>        
+        </div>
+
+        <div id="DBERT" class="vertical_tabcontent">
+         <h4>Sentiment Analysis using Distill BERT </h4>        
+        </div>
+
+        <div id="BERT" class="vertical_tabcontent">
+         <h4>Sentiment Analysis using Bidirectiona Encoder Representations of Transformers </h4>        
+        </div>
+
+        <div id="XLNet" class="vertical_tabcontent">
+         <h4>Sentiment Analysis using XLNet </h4>        
+        </div>
+       
+
+      </div>
+
+</div>
+
+</body>
+  {% endblock %}
+</html>

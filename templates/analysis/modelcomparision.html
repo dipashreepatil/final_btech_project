@@ -1,0 +1,404 @@
+<!doctype html>
+{% extends "analysis/base.html" %}
+<html lang="en">
+{% block body_block %}
+<head>
+     {% load static %}
+
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
+    <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js" integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q" crossorigin="anonymous"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js" integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+  
+   
+    <link rel="stylesheet"  href="{%  static  'CSS/predict.css'  %}">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@2.9.3/dist/Chart.min.js"></script>
+
+    <script>
+    
+        function selectType(evt, parameterType) {
+        // Declare all variables
+             var i, tabcontent, tablinks;
+            // Declare all variables
+             var i, vertical_tabcontent, vertical_tablinks;
+
+            // Get all elements with class="tabcontent" and hide them
+            vertical_tabcontent = document.getElementsByClassName("vertical_tabcontent");
+          
+            for (i = 0; i < vertical_tabcontent.length; i++) {
+                 vertical_tabcontent[i].style.display = "none";
+                 }
+
+            // Get all elements with class="tablinks" and remove the class "active"
+            vertical_tablinks = document.getElementsByClassName("vertical_tablinks");
+            for (i = 0; i < vertical_tablinks.length; i++) {
+                 vertical_tablinks[i].className = vertical_tablinks[i].className.replace(" active", "");
+                 }
+        // Get all elements with class="tabcontent" and hide them
+            tabcontent = document.getElementsByClassName("tabcontent");
+          
+            for (i = 0; i < tabcontent.length; i++) {
+                 tabcontent[i].style.display = "none";
+                 }
+
+         // Get all elements with class="tablinks" and remove the class "active"
+            tablinks = document.getElementsByClassName("tablinks");
+            for (i = 0; i < tablinks.length; i++) {
+                 tablinks[i].className = tablinks[i].className.replace(" active", "");
+                 }
+
+            // Show the current tab, and add an "active" class to the button that opened the tab
+            document.getElementById(parameterType).style.display = "block";
+                    evt.currentTarget.className += " active";
+                }
+          
+        
+
+        function selectParameter(evt, parameterType) {
+            // Declare all variables
+             var i, vertical_tabcontent, vertical_tablinks;
+
+            // Get all elements with class="tabcontent" and hide them
+            vertical_tabcontent = document.getElementsByClassName("vertical_tabcontent");
+          
+            for (i = 0; i < vertical_tabcontent.length; i++) {
+                 vertical_tabcontent[i].style.display = "none";
+                 }
+
+            // Get all elements with class="tablinks" and remove the class "active"
+            vertical_tablinks = document.getElementsByClassName("vertical_tablinks");
+            for (i = 0; i < vertical_tablinks.length; i++) {
+                 vertical_tablinks[i].className = vertical_tablinks[i].className.replace(" active", "");
+                 }
+
+            // Show the current tab, and add an "active" class to the button that opened the tab
+            document.getElementById(parameterType).style.display = "block";
+                    evt.currentTarget.className += " active";
+                }
+          function getRandomColor() {
+                    var letters = '789ABCD'.split('');
+                    var color = '#';
+                    for (var i = 0; i < 6; i++ ) {
+                        color += letters[Math.round(Math.random() * 6)];
+                    }
+                    return color;
+                }
+          
+          
+            function get_comparision_ml(event,parameterType){
+               
+               selectParameter(event,parameterType);
+               //document.getElementById(modelType).style.display = "block";
+			  
+               
+                $.ajax({
+                    type: "GET",                                      
+                    url: "{% url 'model_comparision_ml' %}", 
+                    
+                    
+                    success: function(response) {                   
+						draw_accuracy_auc_graph(response.models,response.accuracy,response.auc,"accuracy_auc ml");
+						draw_precision_recall_graph(response.models,response.precision,response.recall,"precision_recall ml");
+						draw_f1score(response.models,response.f1_score,"f1score ml");
+						draw_allparameters(response.models,response.accuracy, response.precision,response.recall,response.f1_score,response.auc,"allparameters ml");
+                  },
+                    error: function (response) {
+                   // alert the error if any error occured
+                   alert("Error occured during analysis");
+                   
+                }
+              })
+              
+             }
+			 
+			 function get_comparision_dl(event,parameterType){
+               
+               selectParameter(event,parameterType);
+               //document.getElementById(modelType).style.display = "block";
+			  
+                $.ajax({
+                    type: "GET",                                      
+                    url: "{% url 'model_comparision_dl' %}", 
+                    
+                    
+                    success: function(response) {          
+					
+						draw_accuracy_auc_graph(response.models,response.accuracy,response.auc,"accuracy_auc dl");
+						draw_precision_recall_graph(response.models,response.precision,response.recall,"precision_recall dl");
+						draw_allparameters(response.models,response.accuracy, response.precision,response.recall,response.f1_score,response.auc,"allparameters dl");
+                  },
+                    error: function (response) {
+                   // alert the error if any error occured
+                   alert("Error occured during analysis");
+                   
+                }
+              })
+              
+             }
+			 
+			 
+			var linegraph = null;
+			var myBar = null;
+			var horizontal_bar = null;
+			var barchart = null;
+
+             function draw_accuracy_auc_graph(models,accuracy_data,auc_data,id){
+				
+				if(myBar){
+				myBar.destroy();}
+				
+               var barChartData = {
+			   title: "Comparision of models in terms of Accuracy and AUC",
+               labels: models,
+               datasets: [{
+                    label: 'Accuracy',
+                    data: auc_data,
+                    borderColor: 'white',
+                    borderWidth: 2,
+                     backgroundColor: 
+                          getRandomColor(),
+                          
+               },  {
+                    type: 'line',
+                    label: 'AUC(Area under ROC',
+                     backgroundColor:
+                          getRandomColor(),
+					borderColor: getRandomColor(),
+					pointBackgroundColor: getRandomColor(),
+                         
+					fill:false,
+                    data: accuracy_data,
+               }, ]
+
+          };
+             
+               var ctx = document.getElementById(id).getContext("2d");
+			 
+               myBar = new Chart(ctx, {
+                    type: 'bar',
+                    data: barChartData,
+                    options: {
+                         responsive: true,
+                    }
+               });
+
+
+             }
+		 
+          function draw_precision_recall_graph(models,precision_data,recall_data,id){
+
+              var ctx2 = document.getElementById(id).getContext("2d");
+			  if(linegraph){
+			  linegraph.destroy();
+			  }
+              linegraph =  new Chart(ctx2,{
+                  type: 'line',
+                  data: {
+                      labels: models,
+                      datasets: [{
+                      
+                      label: "Precision",
+                      data: precision_data,
+                      fill : false,
+                      borderColor: getRandomColor(),
+                      pointBackgroundColor: getRandomColor(),
+					  pointBorderColor : getRandomColor(),
+                      },
+                      {
+                      
+                      label: "Recall",
+                      data: recall_data,
+                      borderColor: getRandomColor(),
+                      pointBackgroundColor: getRandomColor(),
+					
+                      }
+                      ],
+                     },
+                  options: {
+                        responsive: true,
+                        legend: {
+                          display: true,
+                          labels: {
+                            padding: 20
+                          },},}
+                   });   
+              } 
+
+              function draw_f1score(models,f1score_data,id){
+                var ctx3 = document.getElementById(id).getContext("2d");  
+				if(horizontal_bar)
+				{
+				horizontal_bar.destroy();
+				}
+                   horizontal_bar = new Chart(ctx3, {
+                    type: "horizontalBar",
+                    data: {
+                    labels: models,
+                    datasets: [{
+						
+                         backgroundColor:[getRandomColor(),getRandomColor(),getRandomColor(),getRandomColor(),getRandomColor(),getRandomColor(),
+						 getRandomColor(),getRandomColor(),getRandomColor(),getRandomColor(),getRandomColor(),getRandomColor(),getRandomColor()],
+                         data: f1score_data
+                    }]
+                    },
+                    options: {
+					 responsive: true,
+					legend:{display: false }
+                    }
+                    });
+              }
+
+              function draw_allparameters(models,accuracy,precision,recall,f1score,auc,id){
+				if(barchart)
+				{
+				barchart.destroy();
+				}
+                 var ctx4 = document.getElementById(id).getContext("2d");
+                 barchart =  new Chart(ctx4,{
+                  type: 'bar',
+                  data: {
+                      
+                      labels: models,
+                      datasets: [{
+                      data: accuracy,
+                      label:"Accuracy",
+                      backgroundColor: getRandomColor(),
+
+                      },
+                      {
+                      data:precision,
+                      label : "Precision",
+                      backgroundColor: getRandomColor(),
+                      },
+                       {
+                      data:recall,
+                      label : "Recall",
+                      backgroundColor: getRandomColor(),
+                      },
+                       {
+                      data:f1score,
+                      label : "f1score",
+                      backgroundColor:getRandomColor(),
+                      },
+                      
+                      ],
+                      borderWidth : 1
+                     },
+                  options: {
+                      responsive: true
+                     }
+                   });
+              }
+
+
+    
+
+    </script>
+</head>
+
+
+<body>
+
+<div class= "container-sm" style = "margin-top:2% ;margin-left:2%; margin-right:2%">
+<div class="tab">
+  <button class="tablinks" onclick="selectType(event, 'Classical_ML')">Classical Machine Learning Models</button>
+  <button class="tablinks" onclick="selectType(event, 'DL')">Deep Learning Models</button>
+ 
+</div>
+
+<!-- Tab content -->
+<div id="Classical_ML" class="tabcontent">
+        <div class="vertical_tab">
+            <button class="vertical_tablinks" onclick="get_comparision_ml(event,'accuracy_auc')">Accuracy and AUC</button>
+            <button class="vertical_tablinks" onclick="get_comparision_ml(event,'precision_recall')" >Precision and Recall</button>
+            <button class="vertical_tablinks" onclick="get_comparision_ml(event,'f1score')">F1 score</button>
+            <button class="vertical_tablinks" onclick="get_comparision_ml(event,'allparameters')">All parameters</button>          
+        </div>
+
+        <div id="accuracy_auc" class="vertical_tabcontent">
+         <div class="row">
+            <div class="col-11">
+				<center><h5>Accuracy and AUC of classical machine learning models</h5><center>
+				<p></p>
+                <canvas id = "accuracy_auc ml" />
+             </div> 
+            </div> 
+        </div>
+
+       <div id="precision_recall" class="vertical_tabcontent">
+         <div class="row">
+            <div class="col-11">
+			<center><h5>Precision and Recall of classical machine learning models</h5><center>
+				<p></p>
+                <canvas id = "precision_recall ml" />
+             </div> 
+            </div> 
+        </div>
+
+         <div id="f1score" class="vertical_tabcontent">
+         <div class="row">
+            <div class="col-11">
+			<center><h5>F1 scores of classical machine learning models</h5><center>
+				<p></p>
+                <canvas id = "f1score ml" />
+             </div> 
+            </div> 
+        </div>
+
+         <div id="allparameters" class="vertical_tabcontent">
+         <div class="row">
+            <div class="col-11">
+			<center><h5>All parameters of classical machine learning models</h5><center>
+				<p></p>
+                <canvas id = "allparameters ml" />
+             </div> 
+            </div> 
+        </div>
+</div>
+
+<div id="DL" class="tabcontent">
+        <div class="vertical_tab">
+            <button class="vertical_tablinks" onclick="get_comparision_dl(event,'accuracy_auc1')">Accuracy and AUC</button>
+            <button class="vertical_tablinks" onclick="get_comparision_dl(event,'precision_recall1')" >Precision and Recall</button>
+            <button class="vertical_tablinks" onclick="get_comparision_dl(event,'allparameters1')">All parameters</button>          
+        </div>
+
+        <div id="accuracy_auc1" class="vertical_tabcontent">
+         <div class="row">
+            <div class="col-11">
+				<center><h5>Accuracy and AUC of deep learning models</h5><center>
+				<p></p>
+                <canvas id = "accuracy_auc dl" />
+             </div> 
+            </div> 
+        </div>
+
+       <div id="precision_recall1" class="vertical_tabcontent">
+         <div class="row">
+            <div class="col-11">
+			<center><h5>Precision and Recall of deep learning models</h5><center>
+				<p></p>
+                <canvas id = "precision_recall dl" />
+             </div> 
+            </div> 
+        </div>
+
+        
+
+         <div id="allparameters1" class="vertical_tabcontent">
+         <div class="row">
+            <div class="col-11">
+			<center><h5>All parameters of deep learning models</h5><center>
+				<p></p>
+                <canvas id = "allparameters dl" />
+             </div> 
+            </div> 
+        </div>
+</div>
+
+</div>
+
+</body>
+{% endblock %}
+</html>

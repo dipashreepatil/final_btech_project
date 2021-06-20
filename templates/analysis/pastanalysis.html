@@ -1,0 +1,612 @@
+<!doctype html>
+{% extends "analysis/base.html" %}
+<html lang="en">
+{% block body_block %}
+<head>
+     {% load static %}
+
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
+    <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js" integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q" crossorigin="anonymous"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js" integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+  
+   
+    <link rel="stylesheet"  href="{%  static  'CSS/pastanalysis.css'  %}">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@2.9.3/dist/Chart.min.js"></script>
+    
+    <script>
+        
+        function selectType(evt, modelType) {
+        // Declare all variables
+             var i, tabcontent, tablinks;
+            // Declare all variables
+             var i, vertical_tabcontent, vertical_tablinks;
+
+            // Get all elements with class="tabcontent" and hide them
+            vertical_tabcontent = document.getElementsByClassName("vertical_tabcontent");
+          
+            for (i = 0; i < vertical_tabcontent.length; i++) {
+                 vertical_tabcontent[i].style.display = "none";
+                 }
+
+            // Get all elements with class="tablinks" and remove the class "active"
+            vertical_tablinks = document.getElementsByClassName("vertical_tablinks");
+            for (i = 0; i < vertical_tablinks.length; i++) {
+                 vertical_tablinks[i].className = vertical_tablinks[i].className.replace(" active", "");
+                 }
+        // Get all elements with class="tabcontent" and hide them
+            tabcontent = document.getElementsByClassName("tabcontent");
+          
+            for (i = 0; i < tabcontent.length; i++) {
+                 tabcontent[i].style.display = "none";
+                 }
+
+         // Get all elements with class="tablinks" and remove the class "active"
+            tablinks = document.getElementsByClassName("tablinks");
+            for (i = 0; i < tablinks.length; i++) {
+                 tablinks[i].className = tablinks[i].className.replace(" active", "");
+                 }
+
+            // Show the current tab, and add an "active" class to the button that opened the tab
+            document.getElementById(modelType).style.display = "block";
+                    evt.currentTarget.className += " active";
+                }
+          
+        
+
+        function selectModel(evt, modelType) {
+            // Declare all variables
+             var i, vertical_tabcontent, vertical_tablinks;
+
+            // Get all elements with class="tabcontent" and hide them
+            vertical_tabcontent = document.getElementsByClassName("vertical_tabcontent");
+          
+            for (i = 0; i < vertical_tabcontent.length; i++) {
+                 vertical_tabcontent[i].style.display = "none";
+                 }
+
+            // Get all elements with class="tablinks" and remove the class "active"
+            vertical_tablinks = document.getElementsByClassName("vertical_tablinks");
+            for (i = 0; i < vertical_tablinks.length; i++) {
+                 vertical_tablinks[i].className = vertical_tablinks[i].className.replace(" active", "");
+                 }
+
+            // Show the current tab, and add an "active" class to the button that opened the tab
+            document.getElementById(modelType).style.display = "block";
+                    evt.currentTarget.className += " active";
+                }
+        
+              
+            function get_pred(event,ModelType,){
+               selectModel(event,ModelType);
+               //document.getElementById(modelType).style.display = "block";
+               let model = String(ModelType);
+               var barcharty = "BarchartY ".concat(model);
+               var barchartm = "BarchartM ".concat(model);
+               var barchart10k = "Barchart10k ".concat(model);
+                $.ajax({
+                    type: "GET",                                      
+                    url: "{% url 'yearly_prediction' %}", 
+                    data: {"model_name": model},
+                    
+                    success: function(response) { 
+                    alert("yearly success")
+                    //alert(response.data2018);                                             
+                    draw_bargraphy(response.data2018,response.data2019,response.data2020,barcharty); 
+                    $.ajax({
+                      type: "GET",                                      
+                      url: "{% url 'monthly_prediction' %}", 
+                      data: {"model_name": model},
+                      
+                      success: function(response) { 
+                      alert("monthly success")
+                      //alert(response.negative);                                             
+                      draw_bargraphm(response.positive,response.negative,barchartm);
+                      $.ajax({
+                      type: "GET",                                      
+                      url: "{% url '10k_prediction' %}", 
+                      data: {"model_name": model},
+                      
+                      success: function(response) { 
+                      alert("10k success")
+                      //alert(response.negative10k);                                             
+                      draw_bargraph10k(response.positive10k,response.negative10k,barchart10k);             
+                    },
+                      error: function (response) {
+                    // alert the error if any error occured
+                    alert("Error occured during analysis");
+                  }
+                })             
+                    },
+                      error: function (response) {
+                    // alert the error if any error occured
+                    alert("Error occured during analysis");
+                  }
+                })            
+                  },
+                    error: function (response) {
+                   // alert the error if any error occured
+                   alert("Error occured during analysis");
+                }
+              })
+             }
+              function getRandomColor() {
+                    var letters = '789ABCD'.split('');
+                    var color = '#';
+                    for (var i = 0; i < 6; i++ ) {
+                        color += letters[Math.round(Math.random() * 6)];
+                    }
+                    return color;
+                }
+
+          function draw_bargraphy(data1,data2,data3,id){
+              
+              negative_data = [data1[1],data2[1],data3[1]];
+              positive_data = [data1[0],data2[0],data3[0]];
+              //alert("feb")
+              //alert(data1);
+              var ctx3 = document.getElementById(id).getContext('2d');
+              
+              var color1= getRandomColor();
+              var color2= getRandomColor();
+              barchartny =  new Chart(ctx3,{
+                  type: 'bar',
+                  data: {
+                      labels: ["2018","2019","2020"],
+                      datasets: [{
+                      data: positive_data,
+                      label:"Positive Sentiment",
+                      backgroundColor: [
+                          color1,color1,color1],
+
+                      },
+                      {
+                      data: negative_data,
+                      label : "Negative Sentiment",
+                      backgroundColor: [
+                          color2,color2,color2 ],
+                      }
+                      
+                      ],
+                      borderWidth : 1
+                     },
+                  options: {
+                      scales: {
+                        yAxes :[{ticks:{beginAtZero : true, max: 100}}]
+                      },
+                      responsive: true
+                     }
+                   }); 
+              }
+          function draw_bargraphm(data1,data2,id){
+              
+              negative_data = data2;
+              positive_data = data1;
+              //alert("jan")
+              //alert(data1);
+              var ctx3 = document.getElementById(id).getContext('2d');
+              
+              var color1= getRandomColor();
+              var color2= getRandomColor();
+              barchartnm =  new Chart(ctx3,{
+                  type: 'bar',
+                  data: {
+                      labels: ["Jan","Feb","Mar","Apr","May","June","July","Aug","Sep","Oct","Nov","Dec"],
+                      datasets: [{
+                      data: positive_data,
+                      label:"Positive Sentiment",
+                      backgroundColor: [
+                          color1,color1,color1,color1,color1,color1,color1,color1,color1,color1,color1,color1],
+
+                      },
+                      {
+                      data: negative_data,
+                      label : "Negative Sentiment",
+                      backgroundColor: [
+                          color2,color2,color2,color2,color2,color2,color2,color2,color2,color2,color2,color2 ],
+                      }
+                      
+                      ],
+                      borderWidth : 1
+                     },
+                  options: {
+                      scales: {
+                        yAxes :[{ticks:{beginAtZero : true, max: 100}}]
+                      },
+                      responsive: true
+                     }
+                   }); 
+              }
+
+              function draw_bargraph10k(data1,data2,id){
+              
+              negative_data = data2;
+              positive_data = data1;
+              //alert("10k")
+              //alert(positive_data);
+              var ctx3 = document.getElementById(id).getContext('2d');
+              
+              var color1= getRandomColor();
+              var color2= getRandomColor();
+              barchartnk =  new Chart(ctx3,{
+                  type: 'bar',
+                  data: {
+                      labels: ["2010","2011","2012","2013","2014","2015","2016","2017","2018","2019","2020"],
+                      datasets: [{
+                      data: positive_data,
+                      label:"Positive Sentiment",
+                      backgroundColor: [
+                          color1,color1,color1,color1,color1,color1,color1,color1,color1,color1,color1],
+
+                      },
+                      {
+                      data: negative_data,
+                      label : "Negative Sentiment",
+                      backgroundColor: [
+                          color2,color2,color2,color2,color2,color2,color2,color2,color2,color2,color2],
+                      }
+                      
+                      ],
+                      borderWidth : 1
+                     },
+                  options: {
+                      scales: {
+                        yAxes :[{ticks:{beginAtZero : true, max: 100}}]
+                      },
+                      responsive: true
+                     }
+                   }); 
+              }
+              $(document).on('submit','#company_search_form',function(e){
+               //document.getElementById(modelType).style.display = "block";
+              
+                e.preventDefault();
+                var serializedData = $(this).serialize();
+                var query = document.getElementById("query_input").value;
+                alert(serializedData);
+                
+                $('#search_button').html(
+                  '<i></i>Searching...');
+                $('#search_button').prop('disabled',true);
+
+                $.ajax({
+                    type: "POST",                  
+                    url: "{% url 'past_search_view' %}", 
+                    data: serializedData,
+                    success: function(response) {      
+                    
+                    $('#search_button').prop('disabled',false); 
+                     $('#search_button').html('<i></i>Search');  
+                   
+                    document.getElementById("display_query").innerHTML = String(query);
+                    
+                  },
+                    error: function (response) {
+                   // alert the error if any error occured
+                   alert("Error!");
+                }
+              });
+              
+         })
+    
+           
+
+    </script>
+</head>
+
+<body>
+
+<div class= "container-sm" style = "margin-top:2% ;margin-left:2%; margin-right:2%">
+<form id="company_search_form">
+{% csrf_token %}
+<center>  
+               
+              <select type = "text" style = "margin-left:10%; height:35px; width:25%" 
+                  placeholder = "Search" name = "search_words" id='query_input'>
+                  <option name="apple">Apple</option>
+                  <option name="google">Google</option>
+                  </select>
+
+               <button style = " background-color:#93e6ce;;
+                  height:35px; width:7%;;" type = "submit" 
+                  value = "Search" id='search_button'>
+                  <strong>Search</strong>
+               </button>
+
+            </center>
+</form>
+<h4>Company Selected:<span id="display_query"></span></h4>
+<p></p>
+
+
+<div class="tab">
+    <button class="tablinks" onclick="selectType(event, 'Classical_ML')">Classical Machine Learning Models</button>
+</div>
+
+
+<div id="Classical_ML" class="tabcontent">
+        <div class="vertical_tab">
+            <button class="vertical_tablinks" onclick="get_pred(event,'Logistic Regression')">Logistic Regression</button>
+            <button class="vertical_tablinks" onclick="get_pred(event,'Perceptron')" >Perceptron</button>
+            <button class="vertical_tablinks" onclick="get_pred(event,'SVM')">Support Vector Machine</button>
+            <button class="vertical_tablinks" onclick="get_pred(event,'KNearest')">KNearest Neighbors</button>
+            <button class="vertical_tablinks" onclick="get_pred(event,'ComplementNB')">Complement Naive Bayes</button>
+            <button class="vertical_tablinks" onclick="get_pred(event,'BernoulliNB')">Bernoulli Naive Bayes</button>
+            <button class="vertical_tablinks" onclick="get_pred(event,'MultinomialNB')" >Multinomial Naive Bayes</button>
+            <button class="vertical_tablinks" onclick="get_pred(event,'Decision Tree')" >Decision Tree</button>
+            <button class="vertical_tablinks" onclick="get_pred(event,'Linear SVM')">Linear SVM</button>
+            <button class="vertical_tablinks" onclick="get_pred(event,'Random Forest')">Random Forest</button>
+            <button class="vertical_tablinks" onclick="get_pred(event,'AdaBoost')" >AdaBoost Classifier</button>
+            <button class="vertical_tablinks" onclick="get_pred(event,'Gradient Descent')">Gradient Descent Classifier</button>
+            <button class="vertical_tablinks" onclick="get_pred(event,'SGD')">SGD Classifier</button>
+            
+        </div>
+
+        <div id="Logistic Regression" class="vertical_tabcontent">
+          <h4>Sentiment Analysis using Logistic Regression Classifier</h4>
+          <div class="row">
+            <div class="col-6">
+            <center><h5>Yearly tweets analysis</h5></center>
+                <canvas id="BarchartY Logistic Regression" width="450" height="300" />
+             </div>
+              <div class="col-6">
+                <center><h5>Monthly tweets analysis</h5></center>
+                <canvas id="BarchartM Logistic Regression" width="450" height="300" />
+              </div>
+          </div>
+          <div class="row">
+            <div class="col-6">
+              <center><h5>10k analysis</h5></center>
+              <canvas id="Barchart10k Logistic Regression" width="450" height="300" />
+            </div>  
+          </div> 
+        </div>
+          
+        
+        <div id="Perceptron" class="vertical_tabcontent">
+          <h4>Sentiment Analysis using Perceptron</h4>
+          <div class="row">
+            <div class="col-6">
+            <center><h5>Yearly tweets analysis</h5></center>
+                <canvas id="BarchartY Perceptron" width="450" height="300" />
+             </div>
+              <div class="col-6">
+                <center><h5>Monthly tweets analysis</h5></center>
+                <canvas id="BarchartM Perceptron" width="450" height="300" />
+              </div>
+          </div>
+          <div class="row">
+            <div class="col-6">
+              <center><h5>10k analysis</h5></center>
+              <canvas id="Barchart10k Perceptron" width="450" height="300" />
+            </div>  
+          </div>
+        </div>
+
+        <div id="SVM" class="vertical_tabcontent">
+          <h4>Sentiment Analysis using SVM</h4>
+          <div class="row">
+            <div class="col-6">
+            <center><h5>Yearly tweets analysis</h5></center>
+                <canvas id="BarchartY SVM" width="450" height="300" />
+             </div>
+              <div class="col-6">
+                <center><h5>Monthly tweets analysis</h5></center>
+                <canvas id="BarchartM SVM" width="450" height="300" />
+              </div>
+          </div>
+          <div class="row">
+            <div class="col-6">
+              <center><h5>10k analysis</h5></center>
+              <canvas id="Barchart10k SVM" width="450" height="300" />
+            </div>  
+          </div>
+        </div>
+
+        <div id="KNearest" class="vertical_tabcontent">
+          <h4>Sentiment Analysis using KNearest Classifier</h4>
+          <div class="row">
+            <div class="col-6">
+            <center><h5>Yearly tweets analysis</h5></center>
+                <canvas id="BarchartY KNearest" width="450" height="300" />
+             </div>
+              <div class="col-6">
+                <center><h5>Monthly tweets analysis</h5></center>
+                <canvas id="BarchartM KNearest" width="450" height="300" />
+              </div>
+          </div>
+          <div class="row">
+            <div class="col-6">
+              <center><h5>10k analysis</h5></center>
+              <canvas id="Barchart10k KNearest" width="450" height="300" />
+            </div>  
+          </div>
+        </div>
+
+        <div id="ComplementNB" class="vertical_tabcontent">
+          <h4>Sentiment Analysis using ComplementNB</h4>
+          <div class="row">
+            <div class="col-6">
+            <center><h5>Yearly tweets analysis</h5></center>
+                <canvas id="BarchartY ComplementNB" width="450" height="300" />
+             </div>
+              <div class="col-6">
+                <center><h5>Monthly tweets analysis</h5></center>
+                <canvas id="BarchartM ComplementNB" width="450" height="300" />
+              </div>
+          </div>
+          <div class="row">
+            <div class="col-6">
+              <center><h5>10k analysis</h5></center>
+              <canvas id="Barchart10k ComplementNB" width="450" height="300" />
+            </div>  
+          </div>
+        </div>
+
+        <div id="BernoulliNB" class="vertical_tabcontent">
+          <h4>Sentiment Analysis using BernoulliNB</h4>
+          <div class="row">
+            <div class="col-6">
+            <center><h5>Yearly tweets analysis</h5></center>
+                <canvas id="BarchartY BernoulliNB" width="450" height="300" />
+             </div>
+              <div class="col-6">
+                <center><h5>Monthly tweets analysis</h5></center>
+                <canvas id="BarchartM BernoulliNB" width="450" height="300" />
+              </div>
+          </div>
+          <div class="row">
+            <div class="col-6">
+              <center><h5>10k analysis</h5></center>
+              <canvas id="Barchart10k BernoulliNB" width="450" height="300" />
+            </div>  
+          </div>
+        </div>
+
+        <div id="MultinomialNB" class="vertical_tabcontent">
+          <h4>Sentiment Analysis using MultinomialNB</h4>
+          <div class="row">
+            <div class="col-6">
+            <center><h5>Yearly tweets analysis</h5></center>
+                <canvas id="BarchartY MultinomialNB" width="450" height="300" />
+             </div>
+              <div class="col-6">
+                <center><h5>Monthly tweets analysis</h5></center>
+                <canvas id="BarchartM MultinomialNB" width="450" height="300" />
+              </div>
+          </div>
+          <div class="row">
+            <div class="col-6">
+              <center><h5>10k analysis</h5></center>
+              <canvas id="Barchart10k MultinomialNB" width="450" height="300" />
+            </div>  
+          </div>
+        </div>
+
+        <div id="Decision Tree" class="vertical_tabcontent">
+          <h4>Sentiment Analysis using Decision Tree</h4>
+          <div class="row">
+            <div class="col-6">
+            <center><h5>Yearly tweets analysis</h5></center>
+                <canvas id="BarchartY Decision Tree" width="450" height="300" />
+             </div>
+              <div class="col-6">
+                <center><h5>Monthly tweets analysis</h5></center>
+                <canvas id="BarchartM Decision Tree" width="450" height="300" />
+              </div>
+          </div>
+          <div class="row">
+            <div class="col-6">
+              <center><h5>10k analysis</h5></center>
+              <canvas id="Barchart10k Decision Tree" width="450" height="300" />
+            </div>  
+          </div>
+        </div>
+
+        <div id="Linear SVM" class="vertical_tabcontent">
+          <h4>Sentiment Analysis using Linear SVM</h4>
+          <div class="row">
+            <div class="col-6">
+            <center><h5>Yearly tweets analysis</h5></center>
+                <canvas id="BarchartY Linear SVM" width="450" height="300" />
+             </div>
+              <div class="col-6">
+                <center><h5>Monthly tweets analysis</h5></center>
+                <canvas id="BarchartM Linear SVM" width="450" height="300" />
+              </div>
+          </div>
+          <div class="row">
+            <div class="col-6">
+              <center><h5>10k analysis</h5></center>
+              <canvas id="Barchart10k Linear SVM" width="450" height="300" />
+            </div>  
+          </div>
+        </div>
+
+        <div id="Random Forest" class="vertical_tabcontent">
+          <h4>Sentiment Analysis using Random Forest</h4>
+          <div class="row">
+            <div class="col-6">
+            <center><h5>Yearly tweets analysis</h5></center>
+                <canvas id="BarchartY Random Forest" width="450" height="300" />
+             </div>
+              <div class="col-6">
+                <center><h5>Monthly tweets analysis</h5></center>
+                <canvas id="BarchartM Random Forest" width="450" height="300" />
+              </div>
+          </div>
+          <div class="row">
+            <div class="col-6">
+              <center><h5>10k analysis</h5></center>
+              <canvas id="Barchart10k Random Forest" width="450" height="300" />
+            </div>  
+          </div>
+        </div>
+
+        <div id="AdaBoost" class="vertical_tabcontent">
+          <h4>Sentiment Analysis using AdaBoost</h4>
+          <div class="row">
+            <div class="col-6">
+            <center><h5>Yearly tweets analysis</h5></center>
+                <canvas id="BarchartY AdaBoost" width="450" height="300" />
+             </div>
+              <div class="col-6">
+                <center><h5>Monthly tweets analysis</h5></center>
+                <canvas id="BarchartM AdaBoost" width="450" height="300" />
+              </div>
+          </div>
+          <div class="row">
+            <div class="col-6">
+              <center><h5>10k analysis</h5></center>
+              <canvas id="Barchart10k AdaBoost" width="450" height="300" />
+            </div>  
+          </div>
+        </div>
+
+        <div id="Gradient Descent" class="vertical_tabcontent">
+          <h4>Sentiment Analysis using Gradient Descent</h4>
+          <div class="row">
+            <div class="col-6">
+            <center><h5>Yearly tweets analysis</h5></center>
+                <canvas id="BarchartY Gradient Descent" width="450" height="300" />
+             </div>
+              <div class="col-6">
+                <center><h5>Monthly tweets analysis</h5></center>
+                <canvas id="BarchartM Gradient Descent" width="450" height="300" />
+              </div>
+          </div>
+          <div class="row">
+            <div class="col-6">
+              <center><h5>10k analysis</h5></center>
+              <canvas id="Barchart10k Gradient Descent" width="450" height="300" />
+            </div>  
+          </div>
+        </div>
+
+        <div id="SGD" class="vertical_tabcontent">
+          <h4>Sentiment Analysis using SGD Classifier</h4>
+          <div class="row">
+            <div class="col-6">
+            <center><h5>Yearly tweets analysis</h5></center>
+                <canvas id="BarchartY SGD" width="450" height="300" />
+             </div>
+              <div class="col-6">
+                <center><h5>Monthly tweets analysis</h5></center>
+                <canvas id="BarchartM SGD" width="450" height="300" />
+              </div>
+          </div>
+          <div class="row">
+            <div class="col-6">
+              <center><h5>10k analysis</h5></center>
+              <canvas id="Barchart10k SGD" width="450" height="300" />
+            </div>  
+          </div>
+        </div>
+
+       
+    </div>
+</body>
+{% endblock %}
+</html>
+

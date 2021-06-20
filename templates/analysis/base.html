@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.5.1/jquery.min.js"></script>
+    <script  src="https://maxcdn.bootsrapcdn.com/bootstrap/4.1.3/js/bootstrap.min.js"></script>
+   
+
+</head>
+<body>
+
+<div class="container-lg">
+    <nav class="navbar navbar-expand-lg navbar-light bg-light">
+        <a class="navbar-brand" href="/analysis/predict">Real Time Analysis</a>
+        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+
+        <div class="collapse navbar-collapse" id="navbarSupportedContent">
+            <ul class="navbar-nav mr-auto">
+            
+                <li class="nav-item">
+                    <a class="navbar-brand" href="/analysis/past_predict">Past Analysis</a>
+                </li>
+                <li class="nav-item">
+                    <a class="navbar-brand" href="/analysis/compare_models">Models Comparision</a>
+                </li>
+                
+            </ul>
+        </div>
+    </nav>
+    <div class="container-lg">
+    {% block body_block %}
+    {% endblock %}
+    </div>
+
+</body>
+</html>
