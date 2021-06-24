@@ -14,6 +14,7 @@
    
     <link rel="stylesheet"  href="{%  static  'CSS/pastanalysis.css'  %}">
     <script src="https://cdn.jsdelivr.net/npm/chart.js@2.9.3/dist/Chart.min.js"></script>
+    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
     
     <script>
         
@@ -85,13 +86,14 @@
                var barcharty = "BarchartY ".concat(model);
                var barchartm = "BarchartM ".concat(model);
                var barchart10k = "Barchart10k ".concat(model);
+               var linegraph = "numeric_line ".concat(model);
                 $.ajax({
                     type: "GET",                                      
                     url: "{% url 'yearly_prediction' %}", 
                     data: {"model_name": model},
-                    
+                  
                     success: function(response) { 
-                    alert("yearly success")
+                    //alert("yearly success")
                     //alert(response.data2018);                                             
                     draw_bargraphy(response.data2018,response.data2019,response.data2020,barcharty); 
                     $.ajax({
@@ -100,7 +102,7 @@
                       data: {"model_name": model},
                       
                       success: function(response) { 
-                      alert("monthly success")
+                      //alert("monthly success")
                       //alert(response.negative);                                             
                       draw_bargraphm(response.positive,response.negative,barchartm);
                       $.ajax({
@@ -109,9 +111,25 @@
                       data: {"model_name": model},
                       
                       success: function(response) { 
-                      alert("10k success")
+                      //alert("10k success")
                       //alert(response.negative10k);                                             
-                      draw_bargraph10k(response.positive10k,response.negative10k,barchart10k);             
+                      draw_bargraph10k(response.positive10k,response.negative10k,barchart10k);  
+                      $.ajax({
+                      type: "GET",                                      
+                      url: "{% url 'past_corelation' %}", 
+                      data: {"model_name": model},
+                      
+                      success: function(response) { 
+                      //alert("corelation success")
+                                                      
+                      draw_linegraph(response.percentage_change_list,response.date_list,response.sentiment_change_1,response.date_list_1,linegraph);    
+                            
+                    },
+                      error: function (response) {
+                    // alert the error if any error occured
+                    alert("Error occured during analysis");
+                  }
+                })           
                     },
                       error: function (response) {
                     // alert the error if any error occured
@@ -131,6 +149,79 @@
                 }
               })
              }
+
+             function get_pred_dl(event,ModelType,){
+               selectModel(event,ModelType);
+               //document.getElementById(modelType).style.display = "block";
+               let model = String(ModelType);
+               var barcharty = "BarchartY ".concat(model);
+               var barchartm = "BarchartM ".concat(model);
+               var barchart10k = "Barchart10k ".concat(model);
+               var linegraph = "numeric_line ".concat(model);
+                $.ajax({
+                    type: "GET",                                      
+                    url: "{% url 'yearly_prediction_dl' %}", 
+                    data: {"model_name": model},
+                    
+                    success: function(response) { 
+                    //alert("yearly success dl")
+                    //alert(response.data2018);                                             
+                    draw_bargraphy(response.data2018,response.data2019,response.data2020,barcharty); 
+                    $.ajax({
+                      type: "GET",                                      
+                      url: "{% url 'monthly_prediction_dl' %}", 
+                      data: {"model_name": model},
+                      
+                      success: function(response) { 
+                      //alert("monthly success_dl")
+                      //alert(response.negative);                                             
+                      draw_bargraphm(response.positive,response.negative,barchartm);
+                      $.ajax({
+                      type: "GET",                                      
+                      url: "{% url '10k_prediction_dl' %}", 
+                      data: {"model_name": model},
+                      
+                      success: function(response) { 
+                      //alert("10k success dl")
+                      //alert(response.negative10k);                                             
+                      draw_bargraph10k(response.positive10k,response.negative10k,barchart10k);
+                      $.ajax({
+                      type: "GET",                                      
+                      url: "{% url 'past_corelation' %}", 
+                      data: {"model_name": model},
+                      
+                      success: function(response) { 
+                      //alert("corelation success")
+                                                      
+                      draw_linegraph(response.percentage_change_list,response.date_list,response.sentiment_change_1,response.date_list_1,linegraph);    
+                            
+                    },
+                      error: function (response) {
+                    // alert the error if any error occured
+                    alert("Error occured during analysis");
+                  }
+                })             
+                    },
+                      error: function (response) {
+                    // alert the error if any error occured
+                    alert("Error occured during analysis");
+                  }
+                })             
+                    },
+                      error: function (response) {
+                    // alert the error if any error occured
+                    alert("Error occured during analysis");
+                  }
+                })            
+                  },
+                    error: function (response) {
+                   // alert the error if any error occured
+                   alert("Error occured during analysis");
+                }
+              })
+             }
+
+
               function getRandomColor() {
                     var letters = '789ABCD'.split('');
                     var color = '#';
@@ -144,8 +235,6 @@
               
               negative_data = [data1[1],data2[1],data3[1]];
               positive_data = [data1[0],data2[0],data3[0]];
-              //alert("feb")
-              //alert(data1);
               var ctx3 = document.getElementById(id).getContext('2d');
               
               var color1= getRandomColor();
@@ -258,13 +347,54 @@
                      }
                    }); 
               }
+              function draw_linegraph(pcl,dl,sc,dl1,id){
+
+              //var ctx4 = document.getElementById(id).getContext("2d");
+              //alert("inline")
+              var xsValues =dl1;
+              var ysValues = sc;
+              var xlValues=dl;
+              var ylValues=pcl;
+              //alert(xValues);
+              var trace1 = {
+              x: xsValues,
+              y: ysValues,
+              mode: 'markers',
+              type: 'scatter',
+              marker:
+              {
+              size:5,
+              //color:getRandomColor(),
+              color:'rgb(255, 100, 0)',
+              }
+            };
+            var trace2 = {
+              x:xlValues,
+              y:ylValues,
+              mode: 'lines',
+              type: 'scatter',
+              line: {color:getRandomColor()}
+              //line: {color: '#17BECF'}
+            };
+            var layout = {
+              xaxis: { title: "Dates"},
+              yaxis: {title: "Percentage change"},  
+              //title: "House Prices vs. Size"
+            };
+            var data = [trace1,trace2];
+
+            Plotly.newPlot(id, data, layout);
+
+           }
+
+
               $(document).on('submit','#company_search_form',function(e){
                //document.getElementById(modelType).style.display = "block";
               
                 e.preventDefault();
                 var serializedData = $(this).serialize();
                 var query = document.getElementById("query_input").value;
-                alert(serializedData);
+                //alert(serializedData);
                 
                 $('#search_button').html(
                   '<i></i>Searching...');
@@ -306,6 +436,9 @@
                   placeholder = "Search" name = "search_words" id='query_input'>
                   <option name="apple">Apple</option>
                   <option name="google">Google</option>
+                  <option name="amazon">Amazon</option>
+                  <option name="facebook">Facebook</option>
+                  <option name="netflix">Netflix</option>
                   </select>
 
                <button style = " background-color:#93e6ce;;
@@ -322,6 +455,7 @@
 
 <div class="tab">
     <button class="tablinks" onclick="selectType(event, 'Classical_ML')">Classical Machine Learning Models</button>
+    <button class="tablinks" onclick="selectType(event, 'DL')">Deep Learning Models</button>
 </div>
 
 
@@ -359,6 +493,10 @@
             <div class="col-6">
               <center><h5>10k analysis</h5></center>
               <canvas id="Barchart10k Logistic Regression" width="450" height="300" />
+            </div>
+            <div class="col-6">
+             <center><h5>Co-relation using LSTM</h5><center>
+             <div id="numeric_line Logistic Regression" style="height: 700px;width:150%;max-width:1000px"></div>
             </div>  
           </div> 
         </div>
@@ -380,6 +518,10 @@
             <div class="col-6">
               <center><h5>10k analysis</h5></center>
               <canvas id="Barchart10k Perceptron" width="450" height="300" />
+            </div>
+            <div class="col-6">
+             <center><h5>Co-relation using LSTM</h5><center>
+             <div id="numeric_line Perceptron" style="height: 700px;width:150%;max-width:1000px"></div>
             </div>  
           </div>
         </div>
@@ -400,6 +542,10 @@
             <div class="col-6">
               <center><h5>10k analysis</h5></center>
               <canvas id="Barchart10k SVM" width="450" height="300" />
+            </div>
+            <div class="col-6">
+             <center><h5>Co-relation using LSTM</h5><center>
+             <div id="numeric_line SVM" style="height: 700px;width:150%;max-width:1000px"></div>
             </div>  
           </div>
         </div>
@@ -421,6 +567,10 @@
               <center><h5>10k analysis</h5></center>
               <canvas id="Barchart10k KNearest" width="450" height="300" />
             </div>  
+            <div class="col-6">
+             <center><h5>Co-relation using LSTM</h5><center>
+             <div id="numeric_line KNearest" style="height: 700px;width:150%;max-width:1000px"></div>
+            </div>
           </div>
         </div>
 
@@ -440,6 +590,10 @@
             <div class="col-6">
               <center><h5>10k analysis</h5></center>
               <canvas id="Barchart10k ComplementNB" width="450" height="300" />
+            </div>
+            <div class="col-6">
+             <center><h5>Co-relation using LSTM</h5><center>
+             <div id="numeric_line ComplementNB" style="height: 700px;width:150%;max-width:1000px"></div>
             </div>  
           </div>
         </div>
@@ -460,6 +614,10 @@
             <div class="col-6">
               <center><h5>10k analysis</h5></center>
               <canvas id="Barchart10k BernoulliNB" width="450" height="300" />
+            </div>
+            <div class="col-6">
+             <center><h5>Co-relation using LSTM</h5><center>
+             <div id="numeric_line BernoulliNB" style="height: 700px;width:150%;max-width:1000px"></div>
             </div>  
           </div>
         </div>
@@ -480,7 +638,11 @@
             <div class="col-6">
               <center><h5>10k analysis</h5></center>
               <canvas id="Barchart10k MultinomialNB" width="450" height="300" />
-            </div>  
+            </div> 
+            <div class="col-6">
+             <center><h5>Co-relation using LSTM</h5><center>
+             <div id="numeric_line MultinomialNB" style="height: 700px;width:150%;max-width:1000px"></div>
+            </div> 
           </div>
         </div>
 
@@ -500,6 +662,10 @@
             <div class="col-6">
               <center><h5>10k analysis</h5></center>
               <canvas id="Barchart10k Decision Tree" width="450" height="300" />
+            </div>
+            <div class="col-6">
+             <center><h5>Co-relation using LSTM</h5><center>
+             <div id="numeric_line Decision Tree" style="height: 700px;width:150%;max-width:1000px"></div>
             </div>  
           </div>
         </div>
@@ -540,7 +706,11 @@
             <div class="col-6">
               <center><h5>10k analysis</h5></center>
               <canvas id="Barchart10k Random Forest" width="450" height="300" />
-            </div>  
+            </div> 
+            <div class="col-6">
+             <center><h5>Co-relation using LSTM</h5><center>
+             <div id="numeric_line Random Forest" style="height: 700px;width:150%;max-width:1000px"></div>
+            </div> 
           </div>
         </div>
 
@@ -560,7 +730,11 @@
             <div class="col-6">
               <center><h5>10k analysis</h5></center>
               <canvas id="Barchart10k AdaBoost" width="450" height="300" />
-            </div>  
+            </div> 
+            <div class="col-6">
+             <center><h5>Co-relation using LSTM</h5><center>
+             <div id="numeric_line AdaBoost" style="height: 700px;width:150%;max-width:1000px"></div>
+            </div> 
           </div>
         </div>
 
@@ -580,6 +754,10 @@
             <div class="col-6">
               <center><h5>10k analysis</h5></center>
               <canvas id="Barchart10k Gradient Descent" width="450" height="300" />
+            </div>
+            <div class="col-6">
+             <center><h5>Co-relation using LSTM</h5><center>
+             <div id="numeric_line Gradient Descent" style="height: 700px;width:150%;max-width:1000px"></div>
             </div>  
           </div>
         </div>
@@ -606,6 +784,181 @@
 
        
     </div>
+
+<div id="DL" class="tabcontent">
+        <div class="vertical_tab">
+            <button class="vertical_tablinks" onclick="get_pred_dl(event, 'CNN')">Convolutional Neural Network(CNN)</button>
+            <button class="vertical_tablinks" onclick="get_pred_dl(event, 'Shallow RNN')">Shallow Recurrent Neural Network</button>
+            <button class="vertical_tablinks" onclick="get_pred_dl(event, 'Deep RNN')">Deep Recurrent Neural Netork</button>
+            <button class="vertical_tablinks" onclick="get_pred_dl(event, 'Bidirectional RNN')">Bidirectional Recurrent Neural Network</button>
+            <button class="vertical_tablinks" onclick="get_pred_dl(event, 'LSTM')">Long Short Term Memory</button>
+   
+        </div>
+
+        <div id="CNN" class="vertical_tabcontent">
+         <h4>Sentiment Analysis using Convolutional Neural Network(CNN) </h4>  
+         <div class="row">
+            <div class="col-6">
+            <center><h5>Yearly tweets analysis</h5></center>
+                <canvas id="BarchartY CNN" width="450" height="300" />
+             </div>
+              <div class="col-6">
+                <center><h5>Monthly tweets analysis</h5></center>
+                <canvas id="BarchartM CNN" width="450" height="300" />
+              </div>
+          </div>
+          <div class="row">
+            <div class="col-6">
+              <center><h5>10k analysis</h5></center>
+              <canvas id="Barchart10k CNN" width="450" height="300" />
+            </div> 
+            <div class="col-6">
+             <center><h5>Co-relation using LSTM</h5><center>
+             <div id="numeric_line CNN" style="height: 700px;width:150%;max-width:1000px"></div>
+            </div> 
+          </div>                
+        </div>
+
+        <div id="Shallow RNN" class="vertical_tabcontent">
+         <h4>Sentiment Analysis using Shallow Recurrent Neural Network(RNN) </h4> 
+         <div class="row">
+            <div class="col-6">
+            <center><h5>Yearly tweets analysis</h5></center>
+                <canvas id="BarchartY Shallow RNN" width="450" height="300" />
+             </div>
+              <div class="col-6">
+                <center><h5>Monthly tweets analysis</h5></center>
+                <canvas id="BarchartM Shallow RNN" width="450" height="300" />
+              </div>
+          </div>
+          <div class="row">
+            <div class="col-6">
+              <center><h5>10k analysis</h5></center>
+              <canvas id="Barchart10k Shallow RNN" width="450" height="300" />
+            </div> 
+            <div class="col-6">
+             <center><h5>Co-relation using LSTM</h5><center>
+             <div id="numeric_line Shallow RNN" style="height: 700px;width:150%;max-width:1000px"></div>
+            </div> 
+          </div>               
+        </div>
+
+        <div id="Deep RNN" class="vertical_tabcontent">
+         <h4>Sentiment Analysis using Deep Recurrent Neural Network(RNN) </h4>
+         <div class="row">
+            <div class="col-6">
+            <center><h5>Yearly tweets analysis</h5></center>
+                <canvas id="BarchartY Deep RNN" width="450" height="300" />
+             </div>
+              <div class="col-6">
+                <center><h5>Monthly tweets analysis</h5></center>
+                <canvas id="BarchartM Deep RNN" width="450" height="300" />
+              </div>
+          </div>
+          <div class="row">
+            <div class="col-6">
+              <center><h5>10k analysis</h5></center>
+              <canvas id="Barchart10k Deep RNN" width="450" height="300" />
+            </div> 
+            <div class="col-6">
+             <center><h5>Co-relation using LSTM</h5><center>
+             <div id="numeric_line Deep RNN" style="height: 700px;width:150%;max-width:1000px"></div>
+            </div> 
+          </div>        
+        </div>
+
+        <div id="Bidirectional RNN" class="vertical_tabcontent">
+         <h4>Sentiment Analysis using BidirectionalRecurrent Neural Network(RNN) </h4> 
+          <div class="row">
+            <div class="col-6">
+            <center><h5>Yearly tweets analysis</h5></center>
+                <canvas id="BarchartY Bidirectional RNN" width="450" height="300" />
+             </div>
+              <div class="col-6">
+                <center><h5>Monthly tweets analysis</h5></center>
+                <canvas id="BarchartM Bidirectional RNN" width="450" height="300" />
+              </div>
+          </div>
+          <div class="row">
+            <div class="col-6">
+              <center><h5>10k analysis</h5></center>
+              <canvas id="Barchart10k Bidirectional RNN" width="450" height="300" />
+            </div>  
+            <div class="col-6">
+             <center><h5>Co-relation using LSTM</h5><center>
+             <div id="numeric_line Bidirectional RNN" style="height: 700px;width:150%;max-width:1000px"></div>
+            </div>
+          </div>       
+        </div>
+
+      <div id="LSTM" class="vertical_tabcontent">
+         <div class="row">
+            <div class="col-6">
+            <center><h5>Yearly tweets analysis</h5></center>
+                <canvas id="BarchartY LSTM" width="450" height="300" />
+             </div>
+              <div class="col-6">
+                <center><h5>Monthly tweets analysis</h5></center>
+                <canvas id="BarchartM LSTM" width="450" height="300" />
+              </div>
+          </div>
+          <div class="row">
+            <div class="col-6">
+              <center><h5>10k analysis</h5></center>
+              <canvas id="Barchart10k LSTM" width="450" height="300" />
+            </div>
+            <div class="col-6">
+             <center><h5>Co-relation using LSTM</h5><center>
+             <div id="numeric_line LSTM" style="height: 700px;width:150%;max-width:1000px"></div>
+            </div>  
+          </div>              
+        </div>
+    </div>
+
+
+
+<div id="TSF" class="tabcontent">
+        <div class="vertical_tab">
+            <button class="vertical_tablinks" onclick="selectZSC(event, 'ZSC')">Zero shot classification pipeline</button>
+            <button class="vertical_tablinks" onclick="selectModel(event, 'DBERT')">Distill BERT</button>
+            <button class="vertical_tablinks" onclick="selectModel(event, 'BERT')">Bidirectional Encoder Representations from Transformers </button>
+            <button class="vertical_tablinks" onclick="selectModel(event, 'XLNet')">XLNet</button>
+         
+        </div>
+
+        <div id="ZSC" class="vertical_tabcontent">
+         {% comment %} <h4>Sentiment Analysis using Zero Shot classification pipeline </h4> {% endcomment %}
+         <h4>Sentiment Analysis using ZSC Classifier</h4>
+          <div class="row">
+            <div class="col-6">
+              <canvas id="myChartPie ZSC">myChartPie</canvas>
+            </div>
+
+            <div class="col-6">
+              <canvas id="myChartBar ZSC">myChartBar</canvas>
+            </div>
+          </div>        
+        </div>
+
+        <div id="DBERT" class="vertical_tabcontent">
+         <h4>Sentiment Analysis using Distill BERT </h4>        
+        </div>
+
+        <div id="BERT" class="vertical_tabcontent">
+         <h4>Sentiment Analysis using Bidirectiona Encoder Representations of Transformers </h4>        
+        </div>
+
+        <div id="XLNet" class="vertical_tabcontent">
+         <h4>Sentiment Analysis using XLNet </h4>        
+        </div>
+       
+
+  </div>
+
+</div>
+  
+
+
 </body>
 {% endblock %}
 </html>

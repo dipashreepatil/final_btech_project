@@ -2,13 +2,200 @@
 {% extends "basic_app/base.html" %}
 <html lang="en">
 <head>
+   <meta charset="UTF-8">
+    <title>Contact Us</title>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.5.1/jquery.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/js/bootstrap.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Serif:wght@700&family=Roboto&disply=swap" rel="stylesheet">
+    
+    </head>
+<body >
+{% block body_block %}
 
-</head>
-<body>
 <div class="container">
-     {% block body_block %}
-        <h2>Contact Us</h2>
-    {% endblock %}
+ 
+    <div class="developers">
+        <center><h2>Developers</h2></center>
+       
+    </div>
+    
+    <div class="content"> 
+    
+  
+
+        <div class="row">
+          <div class = "col-1">
+        </div>
+        <div class="col-4 contact-card">
+            <div class="contact-card__header-image">
+
+            </div>
+            <p class="contact-card__name">Shreya Patil </p>
+            <ul>
+                <li class="contact-card__link contact-card__link--email"><a title="Email to Shreya " href="mailto:"><i class="fa fa-email"></i>&#128241 shreya.v.patil@cumminscollege.in</a></li>
+                <li class="contact-card__link contact-card__link--mobile"><a title="Call Shreya" href="tel:">&#128231 +91 9404789425</a></li>
+            </ul>
+           
+        </div>
+        <div class = "col-1">
+        </div>
+
+        <div class="col-4 contact-card">
+            <div class="contact-card__header-image">
+
+            </div>
+            <p class="contact-card__name">Shivani Patil</p>
+            <ul>
+                <li class="contact-card__link contact-card__link--email"><a title="Email to Shivani Patil" href="mailto:"><i class="fa fa-email"></i>&#128241 shivanipatilsp001@gmail.com</a></li>
+                <li class="contact-card__link contact-card__link--mobile"><a title="Call Shivani Patil" href="tel:">&#128231 +91 84597 31693</a></li>
+            </ul>
+        
+
+        </div>
+
+        
+        </div>
+        <div class="row">
+        <p></p>
+        <p></p>
+        <p></p>
+        </div>
+
+        <div class="row">
+         <div class = "col-1">
+        </div>
+
+        <div class="col-4 contact-card">
+            <div class="contact-card__header-image">
+
+            </div>
+            <p class="contact-card__name">Dipashree Patil </p>
+            <ul>
+                <li class="contact-card__link contact-card__link--email"><a title="Email to Dipashree Patil" href="mailto:"><i class="fa fa-email"></i>&#128241 dipashree.patil@cumminscollege.in</a></li>
+                <li class="contact-card__link contact-card__link--mobile"><a title="Call to Dipashree Patil" href="tel:">&#128231 +91 82759 31061</a></li>
+            </ul>
+           
+        </div>
+
+        <div class = "col-1">
+        </div>
+
+        <div class="col-4 contact-card">
+            <div class="contact-card__header-image">
+
+            </div>
+            <p class="contact-card__name">Ayesha Rafia </p>
+            <ul>
+                <li class="contact-card__link contact-card__link--email"><a title="Email to Ayesha Rafia" href="mailto:"><i class="fa fa-email"></i>&#128241 ayesha@cumminscollege.in</a></li>
+                <li class="contact-card__link contact-card__link--mobile"><a title="Call to Ayesha Rafia" href="tel:">&#128231 +91 75584 42516</a></li>
+            </ul>
+           
+        </div>
+
+
+        </div>
+  </div>
 </div>
+
+<style>
+.content{
+    margin-top: 50px;
+}
+:root {
+    font-size: 14px;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+
+
+.contact-card {
+    width: 50px;
+
+    font-family: 'Roboto', sans-serif;
+    font-size: 1em;
+    line-height: 1.5em;
+    text-align: center;
+    background-color: #FFFFFF;
+    border-radius: 1em;
+    box-shadow: 0 0 2em rgba(0, 0, 0, 0.125);
+    overflow: hidden;
+    transition: 0.125s ease-in-out;
+    -webkit-transition: 0.125s ease-in-out;
+    -moz-transition: 0.125s ease-in-out;
+}
+
+.contact-card:hover {
+    transform: translateY(-0.5em);
+}
+
+.contact-card__header-image {
+    width: 100%;
+    height: 6em;
+    padding-top: 2em;
+    background-image: url("https://images.unsplash.com/photo-1525498128493-380d1990a112?ixlib=rb-1.2.1&auto=format&fit=crop&w=675&q=80");
+    background-size: cover;
+    background-color: #FAFAFA;
+}
+
+.contact-card__name {
+    margin-top: 2em;
+    margin-bottom: .5em;
+    font-size: 1.5rem;
+}
+
+.contact-card__link {
+    display: block;
+    padding: .5em 1em;
+    text-decoration: none;
+}
+
+.contact-card__link a {
+    color: #424242;
+    text-decoration: none;
+}
+
+.contact-card__link:hover {
+    background-color: #FAFAFA;
+}
+
+.contact-card__footer {
+    margin-top: .5em;
+    padding: 1em 0;
+    background-color: #FAFAFA;
+}
+
+.contact-card__footer__link {
+    display: inline-block;
+    margin-right: 1em;
+    font-size: 1.125rem;
+    transition: 0.125s ease-in-out;
+    -webkit-transition: 0.125s ease-in-out;
+    -moz-transition: 0.125s ease-in-out;
+}
+
+.contact-card__footer__link a {
+    color: #424242;
+}
+
+.contact-card__footer__link--dribbble {
+    margin-right: 0;
+}
+
+.contact-card__footer__link:hover {
+    transform: scale(1.5);
+    -webkit-transform: scale(1.5);
+    -moz-transform: scale(1.5);
+}
+</style>
+{% endblock %}
 </body>
 </html>

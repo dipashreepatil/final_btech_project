@@ -77,8 +77,9 @@
                     evt.currentTarget.className += " active";
                 }
 
-            function get_numeric_pred(event,id){
-              var company = document.getElementById("display_query").textContent;
+            function get_numeric_pred(event,id,comp){
+              var company = comp;
+              //alert(company);
                 $.ajax({
                     type: "GET",                                      
                     url: "{% url 'numerical_prediction' %}", 
@@ -128,7 +129,7 @@
                    alert("Error occured during analysis");
                 }
               })
-              get_numeric_pred(event,linegraph);
+              get_numeric_pred(event,linegraph,company);
              }
 
             function get_pred_dl(event,ModelType,){
@@ -155,14 +156,14 @@
                     }             
                     draw_donut(response.data_today,donut1,response.data_yesterday,donut2);   
                     draw_bargraph(response.data_today_news,response.data_yesterday_news,bargraph); 
-                    
+                   
                   },
                     error: function (response) {
                    // alert the error if any error occured
                    alert("Error occured during analysis");
                 }
               })
-               get_numeric_pred(event,linegraph);
+                get_numeric_pred(event,linegraph,company);
              }
               function getRandomColor() {
                     var letters = '789ABCD'.split('');
@@ -353,7 +354,7 @@
                   <option name="ibm">IBM</option>
                   <option name="tesla">Tesla</option>
                   <option name="jp morgan">JP Morgan</option>
-                  <option name="gamestop">Gamestop Corporation</option>
+                  <option name="gamestop">Gamestop</option>
                   <option name="facebook">Facebook</option>
                   <option name="netflix">Netflix</option>
                   </select>
@@ -376,7 +377,6 @@
 <div class="tab">
   <button class="tablinks" onclick="selectType(event, 'Classical_ML')">Classical Machine Learning Models</button>
   <button class="tablinks" onclick="selectType(event, 'DL')">Deep Learning Models</button>
-  <button class="tablinks" onclick="selectType(event, 'TSF')">Transformers</button>
 </div>
 
 <!-- Tab content -->

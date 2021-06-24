@@ -17,8 +17,13 @@ urlpatterns = [
     path('yearly_analysis/',views.yearly, name="yearly_prediction"),
     path('monthly_analysis/',views.monthly, name="monthly_prediction"),
     path('10k_analysis/',views.analysis_10k, name="10k_prediction"),
+    path('yearly_analysis_dl/',views.yearly_dl, name="yearly_prediction_dl"),
+    path('monthly_analysis_dl/',views.monthly_dl, name="monthly_prediction_dl"),
+    path('10k_analysis_dl/',views.analysis_10k_dl, name="10k_prediction_dl"),
+    path('corelation/',views.corelation, name="past_corelation"),
     path('compare_models/',views.model_comparision, name="model_comparision"),
     path('compare_ml_models/', views.model_comparision_ml , name="model_comparision_ml"),
     path('compare_dl_models/', views.model_comparision_dl , name="model_comparision_dl"),
+    path('logout/', views.user_logout , name="logout"),
     
      ]

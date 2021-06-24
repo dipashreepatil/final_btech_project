@@ -16,8 +16,7 @@ COMPANIES = [
 class SearchForm(forms.Form):
     search_words = forms.ChoiceField(choices = COMPANIES,widget=forms.Select)
    
-   
-   
+      
 class CompanySearchForm(forms.Form):
     search_words = forms.ChoiceField(choices = COMPANIES,widget=forms.Select)
    

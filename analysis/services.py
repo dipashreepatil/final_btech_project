@@ -77,7 +77,7 @@ def preprocess_news(news_list):
   return df2
 
 def collect_news(search_words):
-    from_date = "2021-06-18"
+    from_date = "2021-06-20"
       #to_date = "2021-05-10"
     url = ('http://newsapi.org/v2/everything?'
        'q={}&'
@@ -127,7 +127,7 @@ def collect_tweets(search_words):
         today = date.today()
         
         company = search_words.split()[0]
-        tweets_data = tw.Cursor(api.search,q=search_words,lang="en",since="2021-06-18").items(800)
+        tweets_data = tw.Cursor(api.search,q=search_words,lang="en",since="2021-06-20").items(800)
         tweets_list=[]
 
         for tweet in tweets_data:         

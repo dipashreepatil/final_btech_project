@@ -122,7 +122,6 @@ def user_login(request):
             saverecord.username=request.POST.get('username')
             saverecord.pswd=request.POST.get('pswd')
             user_type=request.POST.get('user_type')
-            print(user_type)
             username=saverecord.username            
             pswd=saverecord.pswd
             engine1 = create_engine("mysql+pymysql://{user}:{pw}@localhost/{db}"
@@ -137,7 +136,6 @@ def user_login(request):
                 key = b'uf_Nb4vz1rv06vRHKYxyROnYn3gaum5-DhIbWlWf3jI='
                 cipher_suite = Fernet(key)
                 uncipher_text = (cipher_suite.decrypt(pswd_bytes))
-                print(uncipher_text)
                 pswddata = bytes(uncipher_text).decode("utf-8") 
 
             if(usernamedata!=None):
@@ -150,11 +148,13 @@ def user_login(request):
                 request.session['username'] = saverecord.username
                 if (user_type == "R"): 
                     return render(request,'analysis/predict.html')
-                if (user_type == "I"):
-                    return render(request,'investor/investor_home.html')
+                elif (user_type == "I"):
+                    return render(request,'investor/home.html')
                 else:
                     messages.error(request, 'Invalid user Type')
                     print("Invalid credentials")
+                    return render(request,'basic_app/login.html')
+                    
                     
 
 

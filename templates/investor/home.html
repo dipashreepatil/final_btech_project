@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css">
+  
+
+    <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js" integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q" crossorigin="anonymous"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js" integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+  
+   
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@2.9.3/dist/Chart.min.js"></script>
+    
+   
+
+</head>
+
+<script>
+ function get_numeric_pred(){
+              var company = document.getElementById("display_query").textContent;
+              
+                $.ajax({
+                    type: "GET",                                      
+                    url: "{% url 'numerical_prediction_investor' %}", 
+                     data: {"company":company.toLowerCase()},
+                    success: function(response) {  
+                   
+                    draw_linegraph(response.test_set,response.prediction,response.datelist);
+
+                  },
+                    error: function (response) {
+                   // alert the error if any error occured
+                   alert("Error occured during analysis");
+                }
+              })
+             }
+
+             function getRandomColor() {
+                    var letters = '789ABCD'.split('');
+                    var color = '#';
+                    for (var i = 0; i < 6; i++ ) {
+                        color += letters[Math.round(Math.random() * 6)];
+                    }
+                    return color;
+                }
+
+function draw_linegraph(data1,data2,data3){
+
+              var ctx4 = document.getElementById("line").getContext("2d");
+              
+              var data3 = data3;
+              var data1 = data1;
+              data1.push(data2)
+              data3.push("Next Predicted Index");
+              //alert(data1)
+
+             
+              linegraph1 =  new Chart(ctx4,{
+                  type: 'line',
+                  data: {
+                      labels: data3,
+                      datasets: [{
+                      
+                      label: "Stock Closing Indices",
+                      data: data1,
+                      
+                      borderColor: getRandomColor(),
+                      pointBackgroundColor: "rgb(255,0,0)",
+                      }],
+                     },
+                  options: {
+                        responsive: true,
+                        legend: {
+                          display: true,
+                          labels: {
+                            padding: 20
+                          },},}
+                   }); 
+          } 
+        
+			  
+			  $(document).on('submit','#search_form',function(e){
+               //document.getElementById(modelType).style.display = "block";
+                e.preventDefault();
+                var serializedData = $(this).serialize();
+                var query = document.getElementById("query_input").value;
+                
+				
+                
+                $('#search_button').html(
+                  '<i></i>Searching...');
+                $('#search_button').prop('disabled',true);
+
+                $.ajax({
+                    type: "POST",                  
+                    url: "{% url 'search_view_investor' %}", 
+                    data: serializedData,
+                    success: function(response) {      
+                    
+                    $('#search_button').prop('disabled',false); 
+                     $('#search_button').html('<i></i>Search');  
+                   
+                    document.getElementById("display_query").innerHTML = String(query);
+                    get_numeric_pred();
+                  },
+                    error: function (response) {
+                   // alert the error if any error occured
+                   alert("Error!");
+                }
+              });
+              
+         })
+
+    function get_recommendations(){
+			//alert("hiii");
+			$.ajax({
+                    type: "GET",                                      
+                    url: "{% url 'recommendations' %}", 
+                    success: function(response) {  
+                    //alert(response.top1);
+					document.getElementById("top_1").innerHTML = String(response.top1).toUpperCase();
+					document.getElementById("top_2").innerHTML = String(response.top2).toUpperCase();
+					document.getElementById("bottom_1").innerHTML = String(response.bottom1).toUpperCase();
+					document.getElementById("bottom_2").innerHTML = String(response.bottom2).toUpperCase();
+                  },
+                    error: function (response) {
+                   // alert the error if any error occured
+                   alert("Error occured during analysis");
+                }
+              })
+			
+			}      
+</script>
+
+<body onload="get_recommendations()">
+<div class="container-lg">
+   <center>
+   <h2>Welcome Investor!</h2>
+   <nav class="navbar navbar-expand-md navbar-dark bg-dark">
+        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+
+        <div class="collapse navbar-collapse" id="navbarSupportedContent">
+            <ul class="navbar-nav mr-auto">
+            
+                <li class="nav-item">
+                    <a id="logout" class="navbar-brand" href="/analysis/logout">Logout</a>
+                </li>
+                
+            </ul>
+        </div>
+    </nav>
+   </center>
+ 
+    <div class="row">
+		<div class="col-1"></div>
+        <div class="col-4">
+            <center><h5>Recommendations</h5>
+			 <div class="jumbotron">
+				
+				<h5>TOP 2 Companies:</h5>
+				<p></p>
+				<h6>1.<span id="top_1"></span></h6>
+				<h6>2.<span id="top_2"></span></h6>
+				<h5>BOTTOM 2 Companies:</h5>
+				<p></p>
+				<h6>1.<span id="bottom_1"></span></h6>
+				<h6>2.<span id="bottom_2"></span></h6>
+				
+			 </div>
+                
+        </div>
+
+        <div class="col-5">
+                <center><h5>Check Indices</h5></center>
+                
+				<div class= "container-sm" style = "margin-top:2% ;margin-left:2%; margin-right:2%">
+				<form id="search_form" >
+				{% csrf_token %}
+			  <center>  
+               
+              <select type = "text" style = "margin-left:5%; height:35px; width:50%" 
+                  placeholder = "Search" name = "search_words" id='query_input'>
+                  <option name="amazon">Amazon</option>
+                  <option name="apple">Apple</option>
+                  <option name="microsoft">Microsoft</option>
+                  <option name="google">Google</option>
+                  <option name="ibm">IBM</option>
+                  <option name="tesla">Tesla</option>
+                  <option name="jp morgan">JP Morgan</option>
+                  <option name="gamestop">Gamestop Corporation</option>
+                  <option name="facebook">Facebook</option>
+                  <option name="netflix">Netflix</option>
+                  </select>
+
+               <button style = " background-color:#93e6ce;;
+                  height:35px; width:10%;;" type = "submit" 
+                  value = "Search" id='search_button'>
+                  <strong>Search</strong>
+               </button>
+
+              
+            </center>
+			</form>
+			
+			</div>
+			<center><h5>Company Selected:<span id="display_query"></span></h5></center>
+			<p></p>
+			      
+          <center><h6>Numeric Stock Closing Price Prediction</h6></center>
+					
+				<div id="c">
+                <canvas id="line" width="300" height="200"></canvas>
+				
+				</div>
+              
+              </div>
+            
+            </div> 
+             
+          </div>
+
+
+</body>
+</html>
+
